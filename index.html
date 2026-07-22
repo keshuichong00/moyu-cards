@@ -3367,6 +3367,22 @@ function cycleDifficulty() {
 // 键盘控制
 // ============================================
 document.addEventListener('keydown', (e) => {
+  // 焦点在输入框/文本域时，只保留老板键，其他全部放行（避免全局快捷键吞掉输入）
+  const activeTag = document.activeElement?.tagName;
+  const inEditable = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || document.activeElement?.isContentEditable;
+  if (inEditable) {
+    // 老板键（反引号）在任何状态下都生效
+    if (e.key === '`' || e.key === '~' || (e.ctrlKey && e.key === '`')) {
+      e.preventDefault(); toggleWorkMode(); return;
+    }
+    // F12 = 另存为（即使在输入框也生效，因为不影响输入）
+    if (e.key === 'F12') { e.preventDefault(); openSaveAs(); return; }
+    // Ctrl+S = 保存
+    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+      e.preventDefault(); showToast('文档已保存: ' + getDocName()); return;
+    }
+    return; // 放行所有其他按键，让输入框正常接收
+  }
   // 设计器打开时，除了Esc其他都放行（设计器内部输入需要工作）
   if (designerOpen && e.key !== 'Escape') return;
   // 另存为对话框打开时
