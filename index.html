@@ -3505,17 +3505,21 @@ function mqttConnect(willTopic) {
 function mqttSetupHandlers(client) {
   client.on('message', (topic, message) => {
     let msg;
-    try { msg = JSON.parse(message.toString()); } catch { return; }
+    try { msg = JSON.parse(message.toString()); } catch { console.log('[MQTT] JSON解析失败:', message.toString()); return; }
+    console.log('[MQTT] 收到消息:', topic, msg);
     handleWsMessage(msg);
   });
   client.on('close', () => {
+    console.log('[MQTT] 连接关闭');
     const wasConnected = onlineState.connected;
     onlineState.connected = false;
     if (wasConnected && onlineState.roomCode) {
       showToast('连接已断开，正在重连...');
     }
   });
-  client.on('error', () => {});
+  client.on('error', (e) => { console.log('[MQTT] 错误:', e.message); });
+  client.on('reconnect', () => { console.log('[MQTT] 重连中...'); });
+  client.on('connect', () => { console.log('[MQTT] connect事件(内部)'); });
 }
 
 function connectOnline() {
@@ -3537,6 +3541,7 @@ function mqttSend(msg) {
 }
 
 function handleWsMessage(msg) {
+  console.log('[联机] 处理消息:', msg.type, msg);
   switch (msg.type) {
     case 'created':
       onlineState.isHost = true;
@@ -3594,10 +3599,12 @@ function createRoom() {
   modeSelectorOpen = false;
   onlineState.lobbyOpen = true;
   const code = genRoomCode();
+  console.log('[联机] createRoom 房间码:', code);
   const willTopic = MQTT_PREFIX + '/' + code + '/to_guest';
   if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
   onlineState.mqtt = mqttConnect(willTopic);
   onlineState.mqtt.on('connect', () => {
+    console.log('[联机] 主机 MQTT 已连接，订阅 to_host');
     onlineState.connected = true;
     onlineState.isHost = true;
     onlineState.roomCode = code;
@@ -3616,16 +3623,25 @@ function joinRoom(code) {
   helpOpen = false;
   modeSelectorOpen = false;
   onlineState.lobbyOpen = true;
+  console.log('[联机] joinRoom 房间码:', code);
   const willTopic = MQTT_PREFIX + '/' + code + '/to_host';
   if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
   onlineState.mqtt = mqttConnect(willTopic);
   onlineState.mqtt.on('connect', () => {
+    console.log('[联机] 访客 MQTT 已连接，订阅 to_guest，发送 opponent_joined');
     onlineState.connected = true;
     onlineState.isHost = false;
     onlineState.roomCode = code;
     onlineState.waitingForOpponent = false;
     onlineState.mqtt.subscribe(MQTT_PREFIX + '/' + code + '/to_guest', { qos: 1 });
     mqttSend({ type: 'opponent_joined' });
+    // 8秒后如果还没收到 game_init，提示房间码可能不正确
+    if (onlineState._joinTimeout) clearTimeout(onlineState._joinTimeout);
+    onlineState._joinTimeout = setTimeout(() => {
+      if (onlineState.roomCode && !onlineState.isHost && (!state || state.gameMode !== GAME_MODE.ONLINE)) {
+        showToast('未收到主机响应，请检查房间码是否正确或对方是否已创建房间');
+      }
+    }, 8000);
     render();
   });
   mqttSetupHandlers(onlineState.mqtt);
@@ -3660,6 +3676,8 @@ function flipState(s) {
 }
 
 function applyGameInit(syncState) {
+  console.log('[联机] applyGameInit 收到游戏状态');
+  if (onlineState._joinTimeout) { clearTimeout(onlineState._joinTimeout); onlineState._joinTimeout = null; }
   state = syncState;
   onlineState.lobbyOpen = false;
   deckBuilderOpen = false;
@@ -3809,6 +3827,9 @@ function renderOnlineLobby() {
   html += '</div>';
   html += '<div class="ms-status" style="background:#0f6e3d;color:#fff;padding:6px 12px;margin-top:12px;display:flex;align-items:center;gap:16px;font-size:11px">';
   html += '<span>连接状态: '+(onlineState.connected?'✅ 已连接':'❌ 未连接')+'</span>';
+  if (onlineState.roomCode) html += '<span>房间: '+onlineState.roomCode+'</span>';
+  if (onlineState.isHost !== null) html += '<span>身份: '+(onlineState.isHost?'主机':'访客')+'</span>';
+  html += '<span style="opacity:0.6">v4.1</span>';
   html += '<span style="margin-left:auto;cursor:pointer" onclick="closeOnlineLobby()">✕ 关闭 (Esc)</span>';
   html += '</div>';
   html += '</div>';
