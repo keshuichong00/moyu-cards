@@ -3752,6 +3752,11 @@ function renderOnlineLobby() {
     html += '<p style="font-size:12px;color:#999;margin-top:10px">将此房间码发给对方，对方输入后即可开始对战</p>';
     html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">取消</button>';
     html += '</div>';
+  } else if (onlineState.roomCode && !onlineState.isHost) {
+    html += '<div style="text-align:center;padding:40px">';
+    html += '<p style="font-size:14px;color:#666">已加入房间 '+onlineState.roomCode+'，等待主机开始游戏...</p>';
+    html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">离开</button>';
+    html += '</div>';
   } else {
     html += '<table style="border-collapse:collapse;width:100%;max-width:600px;margin:0 auto;font-size:13px"><tr>';
     html += '<td style="padding:20px;vertical-align:top;width:50%">';
@@ -3767,11 +3772,6 @@ function renderOnlineLobby() {
     html += '<input id="joinCodeInput" maxlength="4" placeholder="ABCD" style="text-transform:uppercase;text-align:center;font-size:18px;letter-spacing:4px;padding:6px 10px;width:120px;border:2px solid #ccc;border-radius:4px;margin-bottom:10px" onkeyup="this.value=this.value.toUpperCase()">';
     html += '<br><button onclick="joinRoom(document.getElementById(\'joinCodeInput\').value)" style="background:#6a1b9a;color:#fff;border:none;padding:8px 24px;font-size:13px;cursor:pointer;border-radius:4px">加入房间</button>';
     html += '</div></td></tr></table>';
-  } else if (onlineState.roomCode && !onlineState.isHost) {
-    html += '<div style="text-align:center;padding:40px">';
-    html += '<p style="font-size:14px;color:#666">已加入房间 '+onlineState.roomCode+'，等待主机开始游戏...</p>';
-    html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">离开</button>';
-    html += '</div>';
   }
 
   html += '</div>';
