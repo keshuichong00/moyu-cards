@@ -405,6 +405,73 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
   <div class="ctx-item" onclick="hideFileMenu()">关闭工作簿</div>
 </div>
 
+<!-- ===== 工具栏（去掉重复的tabs，只留工具按钮 + 摸鱼按钮） ===== -->
+<div class="ribbon">
+  <div class="ribbon-content">
+    <div class="ribbon-group">
+      <div class="group-content">
+        <div class="rbtn"><span class="icon">&#128203;</span><span class="label">粘贴</span></div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="rbtn small"><span class="icon">&#9986;</span><span class="label">剪切</span></div>
+          <div class="rbtn small"><span class="icon">&#128209;</span><span class="label">复制</span></div>
+        </div>
+      </div>
+      <div class="group-label">剪贴板</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px;align-items:stretch">
+        <div style="display:flex;gap:3px;align-items:center">
+          <select style="height:20px;border:1px solid #c8c8c8;font-size:11px;width:100px"><option>Calibri</option><option>宋体</option></select>
+          <select style="height:20px;border:1px solid #c8c8c8;font-size:11px;width:44px"><option>11</option><option>12</option></select>
+          <div class="rbtn small" style="font-weight:bold">B</div>
+          <div class="rbtn small" style="font-style:italic">I</div>
+          <div class="rbtn small" style="text-decoration:underline">U</div>
+        </div>
+        <div style="display:flex;gap:1px">
+          <div class="rbtn small">&#8862;</div><div class="rbtn small">&#129513;</div><div class="rbtn small">A</div>
+          <div class="vline"></div><div class="rbtn small">&#8646;</div>
+        </div>
+      </div>
+      <div class="group-label">字体</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px">
+        <div style="display:flex;gap:2px"><div class="rbtn small">&#8645;</div><div class="rbtn small">&#8801;</div><div class="rbtn small">&#8659;</div></div>
+        <div style="display:flex;gap:2px"><div class="rbtn small">&#8676;</div><div class="rbtn small">&#8596;</div><div class="rbtn small">&#8677;</div></div>
+      </div>
+      <div class="group-label">对齐方式</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px">
+        <div class="rbtn small"><span class="icon">&#165;</span><span class="label">会计</span></div>
+        <div class="rbtn small"><span class="icon">%</span><span class="label">百分比</span></div>
+      </div>
+      <div class="group-label">数字</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content"><div class="rbtn"><span class="icon">&#9636;</span><span class="label">条件格式</span></div></div>
+      <div class="group-label">样式</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content">
+        <div class="rbtn"><span class="icon">+</span><span class="label">插入</span></div>
+        <div class="rbtn"><span class="icon">&#8722;</span><span class="label">删除</span></div>
+      </div>
+      <div class="group-label">单元格</div>
+    </div>
+    <!-- 摸鱼模式按钮（醒目，一键切换工作伪装） -->
+    <div class="ribbon-group" style="border-right:none">
+      <div class="group-content">
+        <div class="rbtn" id="ribbonMoyuBtn" onclick="toggleWorkMode()" style="padding:4px 10px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:4px" title="按 ` 键也可切换">
+          <span class="icon">&#127793;</span>
+          <span class="label">摸鱼模式</span>
+        </div>
+      </div>
+      <div class="group-label" id="ribbonMoyuLabel">已关闭</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 名称框 + 编辑栏 ===== -->
 <div class="formula-bar">
   <input class="name-box" id="nameBox" value="A1" readonly>
@@ -1958,6 +2025,11 @@ function log(msg) { state.log.push(msg); if (state.log.length > 8) state.log.shi
 // ============================================
 function render() {
   const area = document.getElementById('gameArea');
+  // 同步工具栏上"摸鱼模式"按钮的视觉状态
+  updateMoyuButton();
+  // 同步菜单栏"文件"下拉里的"摸鱼模式"标签
+  const fwml = document.getElementById('fileMenuWorkMode');
+  if (fwml) fwml.textContent = workMode ? '退出摸鱼模式' : '摸鱼模式';
   // Sheet标签同步
   const tabs = document.querySelectorAll('.sheet-tab');
   tabs.forEach(t => t.classList.remove('active'));
@@ -2288,7 +2360,30 @@ function renderWorkData() {
 
 function toggleWorkMode() {
   workMode = !workMode;
+  updateMoyuButton();
   render();
+}
+
+// 同步工具栏上"摸鱼模式"按钮的视觉状态
+function updateMoyuButton() {
+  const btn = document.getElementById('ribbonMoyuBtn');
+  const lbl = document.getElementById('ribbonMoyuLabel');
+  if (!btn || !lbl) return;
+  if (workMode) {
+    btn.style.background = '#ff9800';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#e68900';
+    lbl.textContent = '已开启 · 老板键 \u0060';
+    lbl.style.color = '#e68900';
+    lbl.style.fontWeight = 'bold';
+  } else {
+    btn.style.background = '#f0f0f0';
+    btn.style.color = '#333';
+    btn.style.borderColor = '#bbb';
+    lbl.textContent = '已关闭';
+    lbl.style.color = '#605e5c';
+    lbl.style.fontWeight = 'normal';
+  }
 }
 
 // ============================================
