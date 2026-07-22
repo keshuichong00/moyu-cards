@@ -1,0 +1,3814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book1</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2f1;overflow:hidden;user-select:none}
+
+/* ===== 标题栏 ===== */
+.title-bar{height:32px;background:#0f6e3d;display:flex;align-items:center;padding:0 8px;color:#fff}
+.title-bar .logo{font-size:14px;font-weight:600;margin-right:8px}
+.title-bar .doc-name{font-size:12px;opacity:.9;flex:1}
+.title-bar .win-btns{display:flex}
+.title-bar .win-btns span{width:46px;height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+.title-bar .win-btns span:hover{background:rgba(255,255,255,.15)}
+.title-bar .win-btns span.close:hover{background:#e81123}
+
+/* ===== 菜单栏 ===== */
+.menu-bar{height:28px;background:#fff;display:flex;align-items:center;padding:0 6px;border-bottom:1px solid #e1dfdd;gap:1px}
+.menu-bar .menu-item{padding:4px 8px;border-radius:3px;cursor:pointer;font-size:12px;color:#323130}
+.menu-bar .menu-item:hover{background:#f0f0f0}
+.menu-bar .right-icons{margin-left:auto;display:flex;gap:6px;align-items:center;padding-right:4px}
+.menu-bar .right-icons span{font-size:14px;color:#605e5c;cursor:pointer}
+
+/* ===== 功能区 ===== */
+.ribbon{background:#fff;border-bottom:1px solid #e1dfdd;padding:2px 6px 4px}
+.ribbon-tabs{display:flex;height:24px;align-items:center;border-bottom:1px solid #e1dfdd;margin-bottom:4px}
+.ribbon-tabs .tab{padding:2px 10px;font-size:12px;cursor:pointer;border-radius:3px 3px 0 0;color:#323130}
+.ribbon-tabs .tab.active{background:#f3f2f1;border-bottom:2px solid #0f6e3d;font-weight:600}
+.ribbon-tabs .tab:hover:not(.active){background:#f0f0f0}
+.ribbon-content{display:flex;padding:2px 0;min-height:56px}
+.ribbon-group{display:flex;flex-direction:column;align-items:center;border-right:1px solid #e1dfdd;padding:0 6px}
+.ribbon-group .group-content{display:flex;gap:4px;align-items:center;flex:1}
+.ribbon-group .group-label{font-size:10px;color:#605e5c;margin-top:2px}
+.rbtn{display:flex;flex-direction:column;align-items:center;padding:3px 5px;border-radius:3px;cursor:pointer;gap:1px;min-width:32px}
+.rbtn:hover{background:#f0f0f0}
+.rbtn .icon{font-size:16px;line-height:1}
+.rbtn .label{font-size:10px;color:#323130}
+.rbtn.small{flex-direction:row;gap:3px;min-width:auto;padding:2px 6px}
+.rbtn.small .icon{font-size:13px}
+.rbtn.small .label{font-size:11px}
+.vline{width:1px;height:28px;background:#e1dfdd;margin:0 2px}
+
+/* ===== 名称框 + 编辑栏 ===== */
+.formula-bar{display:flex;align-items:center;background:#fff;border-bottom:1px solid #e1dfdd;height:22px}
+.name-box{width:120px;height:22px;border:none;border-right:1px solid #e1dfdd;padding:0 6px;font-size:12px;outline:none;background:#fff}
+.fx-label{padding:0 6px;font-style:italic;font-family:'Cambria Math',serif;color:#605e5c;font-size:13px;border-right:1px solid #e1dfdd;height:22px;display:flex;align-items:center}
+.formula-input{flex:1;height:22px;border:none;padding:0 6px;font-size:12px;outline:none}
+
+/* ===== 游戏区域 ===== */
+.game-area{position:relative;overflow:auto;background:#fff;height:calc(100vh - 226px);min-height:400px}
+.game-table{border-collapse:collapse;font-size:12px;font-family:Calibri,'Segoe UI',sans-serif;width:auto}
+.game-table td,.game-table th{border:1px solid #d1d1d1;padding:2px 6px;height:22px;white-space:nowrap}
+.game-table th{background:#f3f2f1;font-weight:normal;color:#605e5c;font-size:11px;text-align:center}
+.game-table .row-num{background:#f3f2f1;color:#605e5c;text-align:center;font-size:11px;width:35px;min-width:35px}
+
+/* Zone colors */
+.enemy-zone{background:#fce4ec}
+.enemy-minion{background:#fce4ec}
+.player-zone{background:#e8f5e9}
+.player-minion{background:#e8f5e9}
+.log-zone{background:#f5f5f5;color:#666;font-size:11px}
+.hand-zone{background:#fff8e1}
+.hero-zone{background:#e3f2fd;font-weight:bold}
+.turn-zone{background:#e8eaf6;font-weight:bold;text-align:center;color:#1a237e}
+.section-divider{background:#eceff1;font-weight:bold;color:#455a64;font-size:11px;text-align:center}
+.power-zone{background:#f3e5f5;font-weight:bold}
+
+/* Interactive cells */
+.clickable{cursor:pointer}
+.clickable:hover{filter:brightness(.95)}
+.target-valid{box-shadow:inset 0 0 0 2px #ff9800 !important;cursor:crosshair !important}
+.target-valid:hover{background:#fff3e0 !important}
+.selected-minion{box-shadow:inset 0 0 0 2px #fdd835 !important}
+
+/* Stats */
+.hp-low{color:#c62828;font-weight:bold}
+.mana-text{color:#1565c0}
+.mana-insufficient{color:#ccc;text-decoration:line-through}
+.can-attack-dot{color:#2e7d32;font-weight:bold}
+.cant-attack-dot{color:#bbb}
+
+/* Keyword tags */
+.kw-tag{display:inline-block;padding:0 3px;margin:0 1px;border-radius:2px;font-size:10px;font-weight:bold;line-height:14px}
+.kw-taunt{background:#ffe0b2;color:#e65100}
+.kw-charge{background:#ffcdd2;color:#b71c1c}
+.kw-shield{background:#bbdefb;color:#0d47a1}
+.kw-deathrattle{background:#e0e0e0;color:#424242}
+.kw-windfury{background:#e1bee7;color:#4a148c}
+.kw-enrage{background:#ffccbc;color:#bf360c}
+.kw-enrage-active{background:#ff5722;color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* End turn */
+.end-turn-cell{background:#c8e6c9 !important;color:#1b5e20;font-weight:bold;text-align:center;cursor:pointer;border:2px solid #4caf50 !important;font-size:13px !important}
+.end-turn-cell:hover{background:#a5d6a7 !important}
+.end-turn-disabled{background:#e0e0e0 !important;color:#999;cursor:not-allowed;border:2px solid #bdbdbd !important}
+.power-cell{background:#e1bee7 !important;color:#4a148c;font-weight:bold;text-align:center;cursor:pointer;border:1px solid #9c27b0 !important}
+.power-cell:hover{background:#ce93d8 !important}
+.power-disabled{background:#f3e5f5 !important;color:#bbb;cursor:not-allowed;border:1px solid #e1bee7 !important}
+
+/* Game over */
+.game-over-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.92);display:none;justify-content:center;align-items:center;z-index:100}
+.game-over-box{background:#fff;border:2px solid #0f6e3d;border-radius:8px;padding:24px 40px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:320px}
+.game-over-box h3{color:#0f6e3d;margin-bottom:12px;font-size:16px}
+.game-over-box .result-line{font-size:13px;color:#555;margin:4px 0}
+.game-over-box .result-win{color:#2e7d32;font-weight:bold;font-size:15px}
+.game-over-box .result-lose{color:#c62828;font-weight:bold;font-size:15px}
+.game-over-box button{margin-top:12px;background:#0f6e3d;color:#fff;border:none;padding:8px 24px;border-radius:4px;font-size:12px;cursor:pointer}
+.game-over-box button:hover{background:#0a5a32}
+
+/* Targeting banner */
+.target-banner{position:sticky;top:0;left:0;width:100%;background:#fff3e0;border-bottom:2px solid #ff9800;padding:4px 12px;font-size:12px;color:#e65100;font-weight:bold;z-index:10;display:none}
+
+/* ===== Sheet标签栏 ===== */
+.sheet-bar{height:24px;background:#f3f2f1;display:flex;align-items:center;border-top:1px solid #e1dfdd;padding:0 4px;gap:1px}
+.sheet-tab{padding:2px 12px;font-size:11px;cursor:pointer;border:1px solid transparent;color:#605e5c;height:20px;display:flex;align-items:center}
+.sheet-tab.active{background:#fff;border:1px solid #e1dfdd;border-bottom:1px solid #fff;color:#323130;font-weight:600}
+.sheet-tab:hover:not(.active){background:#eaeae8}
+.sheet-add{padding:2px 8px;font-size:14px;color:#605e5c;cursor:pointer}
+
+/* ===== 右键菜单 ===== */
+.ctx-menu{position:fixed;background:#fff;border:1px solid #c8c8c8;box-shadow:2px 2px 6px rgba(0,0,0,.15);z-index:200;font-size:12px;min-width:180px;display:none}
+.ctx-menu .ctx-item{padding:6px 24px;cursor:pointer;color:#323130}
+.ctx-menu .ctx-item:hover{background:#f0f0f0}
+.ctx-menu .ctx-sep{height:1px;background:#e1dfdd;margin:2px 0}
+.ctx-menu .ctx-item .ctx-shortcut{float:right;color:#aaa;font-size:11px}
+
+/* ===== 文件菜单下拉 ===== */
+.file-dropdown{position:absolute;background:#fff;border:1px solid #c8c8c8;box-shadow:2px 2px 6px rgba(0,0,0,.15);z-index:210;font-size:12px;min-width:200px;display:none;padding:2px 0}
+.file-dropdown .ctx-item{padding:6px 24px;cursor:pointer;color:#323130;display:flex;justify-content:space-between;align-items:center}
+.file-dropdown .ctx-item:hover{background:#f0f0f0}
+.file-dropdown .ctx-sep{height:1px;background:#e1dfdd;margin:2px 0}
+.file-dropdown .ctx-item .ctx-shortcut{color:#aaa;font-size:11px;margin-left:24px}
+.menu-item.active{background:#f0f0f0}
+
+/* ===== 状态栏 ===== */
+.status-bar{height:26px;background:#0f6e3d;color:#fff;display:flex;align-items:center;font-size:11px;padding:0 6px;gap:12px}
+.status-bar .status-item{display:flex;align-items:center;gap:3px;padding:0 6px;height:20px;border-radius:3px}
+.status-bar .status-right{margin-left:auto;display:flex;gap:0}
+.status-bar .zoom{display:flex;align-items:center;gap:4px}
+.status-bar .zoom-bar{width:80px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;position:relative}
+.status-bar .zoom-handle{position:absolute;left:50%;top:-3px;width:8px;height:10px;background:#fff;border-radius:2px;transform:translateX(-50%)}
+
+/* ===== 提示 ===== */
+.hint-toast{position:fixed;bottom:40px;right:20px;background:rgba(0,0,0,.85);color:#fff;padding:12px 16px;border-radius:8px;font-size:12px;z-index:999;max-width:340px;line-height:1.8;transition:opacity .5s}
+.hint-toast .hint-title{font-weight:bold;color:#a9d18e;margin-bottom:4px;font-size:13px}
+.hint-toast kbd{background:#3c3c3c;border:1px solid #666;border-radius:3px;padding:1px 5px;font-size:11px;font-family:monospace}
+
+/* ===== 工作模式数据 ===== */
+.work-data{padding:0}
+.work-data table{border-collapse:collapse;font-size:12px;font-family:Calibri,sans-serif}
+.work-data td{padding:2px 6px;height:22px;border:1px solid #d1d1d1;min-width:80px;white-space:nowrap}
+.work-data td.header{background:#4472c4;color:#fff;font-weight:bold;text-align:center}
+.work-data td.sub-header{background:#d9e2f3;font-weight:bold}
+.work-data td.currency{text-align:right}
+.work-data td.percent{text-align:right}
+.work-data td.date{text-align:center}
+.work-data td.total{background:#fff2cc;font-weight:bold}
+.work-data td.positive{color:#008000}
+.work-data td.negative{color:#cc0000}
+
+/* ===== 卡组编辑器 ===== */
+.deck-builder{padding:4px 8px}
+.deck-builder .db-header{background:#4472c4;color:#fff;padding:4px 12px;font-weight:bold;font-size:13px;display:flex;align-items:center;gap:16px}
+.deck-builder .db-hero-select{display:flex;gap:6px;margin:6px 0;align-items:center}
+.deck-builder .db-hero-btn{padding:3px 10px;border:1px solid #c8c8c8;background:#fff;cursor:pointer;font-size:11px;border-radius:3px}
+.deck-builder .db-hero-btn.selected{background:#e1bee7;border-color:#9c27b0;font-weight:bold}
+.deck-builder .db-hero-btn:hover:not(.selected){background:#f5f5f5}
+.deck-builder table{border-collapse:collapse;font-size:11px;font-family:Calibri,sans-serif;width:100%}
+.deck-builder th{background:#4472c4;color:#fff;padding:3px 6px;font-weight:normal;text-align:center;border:1px solid #d1d1d1}
+.deck-builder td{padding:2px 6px;border:1px solid #d1d1d1;height:20px;white-space:nowrap}
+.deck-builder .db-card-row:hover{background:#f0f7ff}
+.deck-builder .db-card-row.selected1{background:#e8f5e9}
+.deck-builder .db-card-row.selected2{background:#c8e6c9}
+.deck-builder .db-count{cursor:pointer;font-weight:bold;text-align:center;width:40px}
+.deck-builder .db-count:hover{background:#fff3e0}
+.deck-builder .db-footer{display:flex;gap:8px;margin:8px 0;padding:8px 0;border-top:1px solid #e1dfdd}
+.deck-builder .db-btn{padding:5px 16px;border:1px solid #0f6e3d;background:#fff;color:#0f6e3d;cursor:pointer;font-size:12px;border-radius:3px}
+.deck-builder .db-btn:hover{background:#f0f0f0}
+.deck-builder .db-btn.primary{background:#0f6e3d;color:#fff}
+.deck-builder .db-btn.primary:hover{background:#0a5a32}
+.deck-builder .db-btn:disabled{background:#e0e0e0;color:#999;border-color:#bdbdbd;cursor:not-allowed}
+.deck-builder .db-status{margin-left:auto;font-size:11px;color:#605e5c;align-self:center}
+
+/* ===== 玩法说明 ===== */
+.help-page{padding:0 8px 16px}
+.help-page .hp-header{background:#0f6e3d;color:#fff;padding:5px 12px;font-weight:bold;font-size:13px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.help-page .hp-header .hp-close{margin-left:auto;cursor:pointer;font-size:14px;padding:2px 8px;border-radius:3px}
+.help-page .hp-header .hp-close:hover{background:rgba(255,255,255,.2)}
+.help-page .hp-section{margin-top:10px}
+.help-page .hp-title{background:#d9e2f3;color:#1a237e;font-weight:bold;padding:3px 10px;font-size:12px;border:1px solid #b4c6e7}
+.help-page table{border-collapse:collapse;font-size:11px;font-family:Calibri,sans-serif;width:100%}
+.help-page th{background:#4472c4;color:#fff;padding:3px 6px;font-weight:normal;text-align:center;border:1px solid #d1d1d1;white-space:nowrap}
+.help-page td{padding:2px 6px;border:1px solid #d1d1d1;height:20px;vertical-align:top}
+.help-page td.hp-key{font-weight:bold;color:#0f6e3d;white-space:nowrap;width:auto}
+.help-page td.hp-val{color:#323130}
+.help-page td.hp-color{text-align:center;white-space:nowrap}
+.help-page .hp-kw{display:inline-block;padding:1px 5px;border-radius:2px;font-size:10px;font-weight:bold;margin:0 2px}
+.help-page .hp-note{font-size:11px;color:#605e5c;padding:4px 10px;background:#fffde7;border:1px solid #fff9c4;margin-top:2px;line-height:1.6}
+.help-page kbd{background:#e0e0e0;border:1px solid #bdbdbd;border-radius:3px;padding:0 5px;font-size:11px;font-family:monospace;font-weight:bold}
+
+/* ===== 自定义标题弹窗（伪装Excel另存为） ===== */
+.saveas-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);display:none;justify-content:center;align-items:center;z-index:200}
+.saveas-box{background:#f3f3f3;border:1px solid #888;box-shadow:2px 2px 8px rgba(0,0,0,.4);width:480px;font-family:'Microsoft YaHei',sans-serif;font-size:12px}
+.saveas-title{background:linear-gradient(180deg,#e8e8e8,#c8c8c8);padding:6px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #888;color:#222}
+.saveas-title-text{font-weight:bold;font-size:13px}
+.saveas-close{cursor:pointer;padding:0 6px;color:#444;font-size:14px}
+.saveas-close:hover{color:#000}
+.saveas-body{padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.saveas-icon{font-size:42px;color:#1a6fc4;line-height:1;flex-shrink:0;margin-top:4px}
+.saveas-content{flex:1}
+.saveas-tip{color:#333;margin-bottom:12px;line-height:1.5}
+.saveas-tip b{color:#000}
+.saveas-field{margin-bottom:8px}
+.saveas-field label{display:block;color:#444;margin-bottom:3px;font-size:11px}
+.saveas-field input{width:100%;box-sizing:border-box;padding:4px 6px;border:1px solid #888;font-size:12px;font-family:inherit;background:#fff}
+.saveas-field input:focus{outline:none;border-color:#1a6fc4;box-shadow:0 0 3px #1a6fc4}
+.saveas-presets{margin-top:8px}
+.saveas-presets-label{font-size:11px;color:#666;margin-bottom:4px}
+.saveas-preset-row{display:flex;flex-wrap:wrap;gap:4px}
+.saveas-preset-btn{padding:3px 8px;background:#fff;border:1px solid #aaa;font-size:11px;cursor:pointer;font-family:inherit;color:#333}
+.saveas-preset-btn:hover{background:#e6f0ff;border-color:#1a6fc4;color:#1a6fc4}
+.saveas-preview{font-size:11px;color:#666;margin-top:8px;padding:4px 6px;background:#fafafa;border:1px dashed #ccc}
+.saveas-preview b{color:#000}
+.saveas-foot{background:#ececec;padding:8px 12px;display:flex;justify-content:flex-end;gap:6px;border-top:1px solid #c8c8c8}
+.saveas-foot button{padding:4px 16px;border:1px solid #888;background:linear-gradient(180deg,#fafafa,#e0e0e0);font-size:12px;cursor:pointer;font-family:inherit;color:#222;min-width:72px}
+.saveas-foot button:hover{background:linear-gradient(180deg,#fff,#e8e8e8)}
+.saveas-foot button.primary{background:linear-gradient(180deg,#1a6fc4,#0e5aa6);color:#fff;border-color:#0a4a8c;font-weight:bold}
+.saveas-foot button.primary:hover{background:linear-gradient(180deg,#2a7fd4,#1a6ab6)}
+
+/* ===== 卡牌设计器 ===== */
+.designer-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:300;display:none;flex-direction:column;font-family:'Microsoft YaHei',sans-serif}
+.designer-header{height:42px;background:linear-gradient(180deg,#217346,#1a5c38);color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.designer-header h2{margin:0;font-size:14px;font-weight:normal;flex:1}
+.designer-header .designer-btn{padding:5px 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;font-size:12px;font-family:inherit;border-radius:3px}
+.designer-header .designer-btn:hover{background:rgba(255,255,255,.25)}
+.designer-header .designer-btn.primary{background:#fff;color:#1a5c38;font-weight:bold;border-color:#fff}
+.designer-body{flex:1;display:flex;overflow:hidden}
+.designer-sidebar{width:280px;background:#f8f8f8;border-right:1px solid #d0d0d0;display:flex;flex-direction:column}
+.designer-sidebar-header{padding:10px 12px;background:#e8e8e8;border-bottom:1px solid #d0d0d0;font-size:12px;font-weight:bold;display:flex;justify-content:space-between;align-items:center}
+.designer-sidebar-header .add-btn{background:#217346;color:#fff;border:none;padding:3px 10px;font-size:11px;cursor:pointer;border-radius:3px}
+.designer-sidebar-header .add-btn:hover{background:#1a5c38}
+.designer-search{padding:8px 10px;background:#f0f0f0;border-bottom:1px solid #d0d0d0}
+.designer-search input{width:100%;box-sizing:border-box;padding:4px 8px;border:1px solid #c0c0c0;font-size:12px;font-family:inherit}
+.designer-search input:focus{outline:none;border-color:#217346}
+.designer-list{flex:1;overflow-y:auto}
+.designer-list .card-item{padding:8px 12px;border-bottom:1px solid #e8e8e8;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px}
+.designer-list .card-item:hover{background:#e8f0e8}
+.designer-list .card-item.active{background:#c8e6c9;border-left:3px solid #217346}
+.designer-list .card-item.custom{background:#fff8e1}
+.designer-list .card-item.custom.active{background:#ffe082}
+.designer-list .ci-cost{width:24px;height:24px;background:#1a5c38;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;flex-shrink:0}
+.designer-list .ci-name{flex:1;font-weight:bold}
+.designer-list .ci-type{font-size:10px;color:#888;background:#e0e0e0;padding:1px 5px;border-radius:2px}
+.designer-list .ci-type.spell{color:#6a1b9a;background:#e1bee7}
+.designer-list .ci-custom-tag{font-size:9px;background:#ff9800;color:#fff;padding:1px 4px;border-radius:2px}
+.designer-list .empty{padding:20px;text-align:center;color:#999;font-size:12px}
+.designer-main{flex:1;overflow-y:auto;padding:20px 30px;background:#fff}
+.designer-main h3{margin:0 0 12px;font-size:14px;color:#333;border-bottom:2px solid #217346;padding-bottom:6px}
+.designer-form{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px}
+.designer-form .field{display:flex;flex-direction:column;gap:4px}
+.designer-form .field.full{grid-column:1/-1}
+.designer-form label{font-size:12px;color:#555;font-weight:bold}
+.designer-form input,.designer-form select,.designer-form textarea{padding:6px 10px;border:1px solid #c0c0c0;font-size:13px;font-family:inherit;background:#fff}
+.designer-form input:focus,.designer-form select:focus,.designer-form textarea:focus{outline:none;border-color:#217346;box-shadow:0 0 3px #217346}
+.designer-form input[type=number]{width:80px}
+.designer-form textarea{resize:vertical;min-height:50px;font-family:inherit}
+.designer-form .kw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px;background:#f8f8f8;border:1px solid #e0e0e0}
+.designer-form .kw-cell{display:flex;align-items:center;gap:4px;padding:4px 6px;background:#fff;border:1px solid #ddd;cursor:pointer;font-size:12px}
+.designer-form .kw-cell:hover{background:#e8f0e8}
+.designer-form .kw-cell input{cursor:pointer}
+.designer-form .hint{font-size:11px;color:#888;margin-top:2px}
+.designer-form .effect-builder{background:#fafafa;border:1px solid #e0e0e0;padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.designer-form .effect-builder .field{margin:0}
+.designer-form .actions{display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #e0e0e0;grid-column:1/-1}
+.designer-form .actions button{padding:8px 20px;border:1px solid #c0c0c0;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;border-radius:3px}
+.designer-form .actions button:hover{background:#f0f0f0}
+.designer-form .actions button.primary{background:#217346;color:#fff;border-color:#1a5c38;font-weight:bold}
+.designer-form .actions button.primary:hover{background:#1a5c38}
+.designer-form .actions button.danger{background:#fff;color:#c62828;border-color:#c62828}
+.designer-form .actions button.danger:hover{background:#ffebee}
+.designer-form .actions button:disabled{opacity:.4;cursor:not-allowed}
+.designer-preview{background:#f5f5f5;border:1px solid #ddd;padding:12px;margin-top:16px;grid-column:1/-1}
+.designer-preview .pv-label{font-size:11px;color:#888;margin-bottom:6px}
+.designer-preview .pv-card{display:inline-block;background:#fff;border:2px solid #1a5c38;border-radius:6px;padding:10px 14px;min-width:180px}
+.designer-preview .pv-name{font-weight:bold;font-size:14px;margin-bottom:4px}
+.designer-preview .pv-stats{display:flex;gap:12px;font-size:13px;color:#333}
+.designer-preview .pv-stats .atk{color:#c62828;font-weight:bold}
+.designer-preview .pv-stats .hp{color:#1565c0;font-weight:bold}
+.designer-preview .pv-tags{margin-top:4px;display:flex;flex-wrap:wrap;gap:3px}
+.designer-preview .pv-text{font-size:11px;color:#666;margin-top:4px;font-style:italic}
+
+/* ===== 模式选择器 ===== */
+.mode-selector{padding:0;background:#fff}
+.mode-selector .ms-header{background:linear-gradient(180deg,#217346,#1a5c38);color:#fff;padding:14px 20px;font-size:15px;font-weight:bold;display:flex;align-items:center;gap:12px}
+.mode-selector .ms-header .ms-icon{font-size:24px}
+.mode-selector .ms-body{padding:24px 32px}
+.mode-selector .ms-intro{font-size:13px;color:#444;line-height:1.7;margin-bottom:20px;padding:12px 16px;background:#f0f7f0;border-left:4px solid #217346;border-radius:3px}
+.mode-selector .ms-intro b{color:#1a5c38}
+.mode-selector .ms-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.mode-selector .ms-card{border:2px solid #c0c0c0;border-radius:8px;padding:20px 24px;cursor:pointer;background:#fff;transition:all .2s;position:relative}
+.mode-selector .ms-card:hover{border-color:#217346;box-shadow:0 4px 12px rgba(33,115,70,.15);transform:translateY(-2px)}
+.mode-selector .ms-card .ms-card-name{font-size:16px;font-weight:bold;color:#1a5c38;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.mode-selector .ms-card .ms-card-badge{background:#ff9800;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:normal}
+.mode-selector .ms-card .ms-card-desc{font-size:12px;color:#555;line-height:1.7;margin-bottom:10px}
+.mode-selector .ms-card .ms-card-features{font-size:11px;color:#777;line-height:1.8;padding:8px 10px;background:#f8f8f8;border-radius:3px}
+.mode-selector .ms-card .ms-card-features li{padding-left:4px}
+.mode-selector .ms-card .ms-card-btn{margin-top:14px;width:100%;padding:8px;background:#217346;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit}
+.mode-selector .ms-card .ms-card-btn:hover{background:#1a5c38}
+.mode-selector .ms-card .ms-card-btn:disabled{background:#ccc;cursor:not-allowed}
+.mode-selector .ms-tip{font-size:11px;color:#888;text-align:center;padding:10px;background:#fffde7;border:1px dashed #ffc107;border-radius:3px}
+
+/* ===== 公平模式选牌界面 ===== */
+.draft-stage{padding:0}
+.draft-stage .ds-header{background:linear-gradient(180deg,#0f6e3d,#0a5a32);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;font-size:13px}
+.draft-stage .ds-header .ds-round{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:12px;font-weight:bold}
+.draft-stage .ds-header .ds-turn-info{flex:1}
+.draft-stage .ds-header .ds-quit{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:3px 10px;cursor:pointer;font-size:11px;border-radius:3px;font-family:inherit}
+.draft-stage .ds-header .ds-quit:hover{background:rgba(255,255,255,.3)}
+.draft-stage .ds-progress{display:flex;align-items:center;gap:10px;background:#fff;padding:8px 20px;border-bottom:1px solid #e1dfdd;font-size:12px}
+.draft-stage .ds-progress .ds-bar-wrap{flex:1;height:14px;background:#e0e0e0;border-radius:7px;overflow:hidden;position:relative}
+.draft-stage .ds-progress .ds-bar{height:100%;background:linear-gradient(90deg,#4caf50,#2e7d32);transition:width .3s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold}
+.draft-stage .ds-progress .ds-decks{display:flex;gap:16px;font-size:11px}
+.draft-stage .ds-progress .ds-deck-side{display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-weight:bold}
+.draft-stage .ds-progress .ds-deck-side.player{background:#e8f5e9;color:#1b5e20}
+.draft-stage .ds-progress .ds-deck-side.enemy{background:#fce4ec;color:#880e4f}
+.draft-stage .ds-main{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#f8f8f8;min-height:400px}
+.draft-stage .ds-picks{padding:14px 18px;background:#fff;border-right:1px solid #d0d0d0}
+.draft-stage .ds-picks:last-child{border-right:none;border-left:1px solid #d0d0d0}
+.draft-stage .ds-picks h4{margin:0 0 10px;font-size:12px;color:#1a5c38;padding:6px 10px;background:#e8f5e9;border-radius:3px;display:flex;justify-content:space-between;align-items:center}
+.draft-stage .ds-picks.enemy h4{background:#fce4ec;color:#880e4f}
+.draft-stage .ds-picks .ds-pick-list{display:flex;flex-wrap:wrap;gap:6px;min-height:60px}
+.draft-stage .ds-picks .ds-pick-empty{font-size:11px;color:#aaa;padding:14px 8px;width:100%;text-align:center;font-style:italic}
+.draft-stage .ds-picks .ds-pick-card{background:#fff;border:1px solid #4caf50;border-radius:4px;padding:5px 9px;font-size:11px;display:flex;align-items:center;gap:5px;box-shadow:1px 1px 2px rgba(0,0,0,.08)}
+.draft-stage .ds-picks.enemy .ds-pick-card{border-color:#e91e63}
+.draft-stage .ds-picks .ds-pick-card .ds-pick-cost{width:18px;height:18px;background:#1a5c38;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:10px;flex-shrink:0}
+.draft-stage .ds-picks.enemy .ds-pick-card .ds-pick-cost{background:#880e4f}
+.draft-stage .ds-pool{padding:14px 18px;background:#fff;max-height:560px;overflow-y:auto;grid-column:1/-1;border-top:1px solid #d0d0d0}
+.draft-stage .ds-pool h4{margin:0 0 10px;font-size:12px;color:#1a5c38;padding:6px 10px;background:#e8f5e9;border-radius:3px;display:flex;justify-content:space-between;align-items:center}
+.draft-stage .ds-pool .ds-pool-tip{font-size:10px;color:#888;font-weight:normal}
+.draft-stage .ds-pool table{width:100%;border-collapse:collapse;font-size:11px;font-family:Calibri,sans-serif}
+.draft-stage .ds-pool th{background:#4472c4;color:#fff;padding:4px 6px;font-weight:normal;text-align:center;border:1px solid #d1d1d1;position:sticky;top:0;z-index:1}
+.draft-stage .ds-pool td{padding:3px 6px;border:1px solid #d1d1d1;height:22px;white-space:nowrap;vertical-align:middle}
+.draft-stage .ds-pool tr.ds-pool-row{background:#fff;cursor:pointer;transition:background .1s}
+.draft-stage .ds-pool tr.ds-pool-row:hover{background:#fff3e0}
+.draft-stage .ds-pool tr.ds-pool-row.taken{background:#f0f0f0;color:#aaa;cursor:not-allowed}
+.draft-stage .ds-pool tr.ds-pool-row.taken td{text-decoration:line-through;opacity:.5}
+.draft-stage .ds-pool tr.ds-pool-row.taken:hover{background:#f0f0f0}
+.draft-stage .ds-pool tr.ds-pool-row.disabled-pool{opacity:.4;cursor:not-allowed}
+.draft-stage .ds-pool tr.ds-pool-row.disabled-pool:hover{background:#fff}
+.draft-stage .ds-pool .ds-card-name{font-weight:bold}
+.draft-stage .ds-pool .ds-card-name.spell{color:#6a1b9a}
+.draft-stage .ds-pool .ds-remaining{color:#1565c0;font-weight:bold;text-align:center}
+.draft-stage .ds-pool .ds-remaining.zero{color:#c62828;text-decoration:line-through}
+.draft-stage .ds-actions{padding:12px 20px;background:#f0f0f0;border-top:1px solid #d0d0d0;display:flex;gap:10px;align-items:center;justify-content:center}
+.draft-stage .ds-actions .ds-action-tip{flex:1;font-size:11px;color:#666}
+.draft-stage .ds-btn{padding:7px 18px;background:#fff;border:1px solid #888;cursor:pointer;font-size:12px;font-family:inherit;border-radius:3px}
+.draft-stage .ds-btn:hover{background:#f0f0f0}
+.draft-stage .ds-btn.primary{background:#217346;color:#fff;border-color:#1a5c38;font-weight:bold}
+.draft-stage .ds-btn.primary:hover{background:#1a5c38}
+.draft-stage .ds-btn:disabled{background:#e0e0e0;color:#999;cursor:not-allowed}
+.draft-stage .ds-pool .ds-pool-empty{padding:30px;text-align:center;color:#999;font-size:12px;font-style:italic}
+.draft-stage .ds-mode-tag{display:inline-block;background:rgba(255,255,255,.25);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:normal}
+</style>
+</head>
+<body>
+
+<!-- ===== 标题栏 ===== -->
+<div class="title-bar">
+  <span class="logo">Excel</span>
+  <span class="doc-name" id="titleDoc">Book1</span>
+  <div class="win-btns"><span>&mdash;</span><span>&#9633;</span><span class="close">&times;</span></div>
+</div>
+
+<!-- ===== 菜单栏 ===== -->
+<div class="menu-bar">
+  <div class="menu-item" id="menuFile">文件</div><div class="menu-item">开始</div><div class="menu-item">插入</div>
+  <div class="menu-item">页面布局</div><div class="menu-item">公式</div><div class="menu-item">数据</div>
+  <div class="menu-item">审阅</div><div class="menu-item">视图</div>
+  <div class="right-icons"><span>&#128269;</span><span>&#128100;</span><span>&#128228;</span></div>
+</div>
+
+<!-- ===== 文件下拉菜单 ===== -->
+<div class="file-dropdown" id="fileDropdown">
+  <div class="ctx-item" onclick="hideFileMenu()">新建 <span class="ctx-shortcut">Ctrl+N</span></div>
+  <div class="ctx-item" onclick="hideFileMenu()">打开... <span class="ctx-shortcut">Ctrl+O</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideFileMenu()">保存 <span class="ctx-shortcut">Ctrl+S</span></div>
+  <div class="ctx-item" onclick="openSaveAs();hideFileMenu()">另存为... <span class="ctx-shortcut">F12</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="toggleHelp();hideFileMenu()">选项... <span class="ctx-shortcut\">?</span></div>
+  <div class="ctx-item" onclick="openModeSelector();hideFileMenu()">选择游戏模式... <span class="ctx-shortcut">M</span></div>
+  <div class="ctx-item" onclick="toggleWorkMode();hideFileMenu()"><span id="fileMenuWorkMode">摸鱼模式</span> <span class="ctx-shortcut">`</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openDeckBuilder();hideFileMenu()">卡组编辑器... <span class="ctx-shortcut">B</span></div>
+  <div class="ctx-item" onclick="openCardDesigner();hideFileMenu()">卡牌设计器... <span class="ctx-shortcut">Ctrl+E</span></div>
+  <div class="ctx-item" onclick="exportAllCards();hideFileMenu()">导出卡牌JSON</div>
+  <div class="ctx-item" onclick="importCards();hideFileMenu()">导入卡牌JSON</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideFileMenu()">打印... <span class="ctx-shortcut">Ctrl+P</span></div>
+  <div class="ctx-item" onclick="hideFileMenu()">关闭工作簿</div>
+</div>
+
+<!-- ===== 功能区 ===== -->
+<div class="ribbon">
+  <div class="ribbon-tabs">
+    <div class="tab active">开始</div><div class="tab">插入</div><div class="tab">页面布局</div>
+    <div class="tab">公式</div><div class="tab">数据</div><div class="tab">审阅</div><div class="tab">视图</div>
+  </div>
+  <div class="ribbon-content">
+    <div class="ribbon-group">
+      <div class="group-content">
+        <div class="rbtn"><span class="icon">&#128203;</span><span class="label">粘贴</span></div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="rbtn small"><span class="icon">&#9986;</span><span class="label">剪切</span></div>
+          <div class="rbtn small"><span class="icon">&#128209;</span><span class="label">复制</span></div>
+        </div>
+      </div>
+      <div class="group-label">剪贴板</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px;align-items:stretch">
+        <div style="display:flex;gap:3px;align-items:center">
+          <select style="height:20px;border:1px solid #c8c8c8;font-size:11px;width:100px"><option>Calibri</option><option>宋体</option></select>
+          <select style="height:20px;border:1px solid #c8c8c8;font-size:11px;width:44px"><option>11</option><option>12</option></select>
+          <div class="rbtn small" style="font-weight:bold">B</div>
+          <div class="rbtn small" style="font-style:italic">I</div>
+          <div class="rbtn small" style="text-decoration:underline">U</div>
+        </div>
+        <div style="display:flex;gap:1px">
+          <div class="rbtn small">&#8862;</div><div class="rbtn small">&#129513;</div><div class="rbtn small">A</div>
+          <div class="vline"></div><div class="rbtn small">&#8646;</div>
+        </div>
+      </div>
+      <div class="group-label">字体</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px">
+        <div style="display:flex;gap:2px"><div class="rbtn small">&#8645;</div><div class="rbtn small">&#8801;</div><div class="rbtn small">&#8659;</div></div>
+        <div style="display:flex;gap:2px"><div class="rbtn small">&#8676;</div><div class="rbtn small">&#8596;</div><div class="rbtn small">&#8677;</div></div>
+      </div>
+      <div class="group-label">对齐方式</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content" style="flex-direction:column;gap:2px">
+        <div class="rbtn small"><span class="icon">&#165;</span><span class="label">会计</span></div>
+        <div class="rbtn small"><span class="icon">%</span><span class="label">百分比</span></div>
+      </div>
+      <div class="group-label">数字</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content"><div class="rbtn"><span class="icon">&#9636;</span><span class="label">条件格式</span></div></div>
+      <div class="group-label">样式</div>
+    </div>
+    <div class="ribbon-group">
+      <div class="group-content">
+        <div class="rbtn"><span class="icon">+</span><span class="label">插入</span></div>
+        <div class="rbtn"><span class="icon">&#8722;</span><span class="label">删除</span></div>
+      </div>
+      <div class="group-label">单元格</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 名称框 + 编辑栏 ===== -->
+<div class="formula-bar">
+  <input class="name-box" id="nameBox" value="A1" readonly>
+  <div class="fx-label">fx</div>
+  <input class="formula-input" id="formulaInput" readonly>
+</div>
+
+<!-- ===== 游戏区域 ===== -->
+<div class="game-area" id="gameArea"></div>
+
+<!-- ===== Sheet标签栏 ===== -->
+<div class="sheet-bar">
+  <span class="sheet-tab active" onclick="switchSheet(this,'Sheet1')">Sheet1</span>
+  <span class="sheet-tab" onclick="switchSheet(this,'Sheet2')">Sheet2</span>
+  <span class="sheet-tab" onclick="switchSheet(this,'Sheet3')">Sheet3</span>
+  <span class="sheet-add">+</span>
+</div>
+
+<!-- ===== 右键菜单 ===== -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" onclick="hideCtxMenu()">复制 <span class="ctx-shortcut">Ctrl+C</span></div>
+  <div class="ctx-item" onclick="hideCtxMenu()">剪切 <span class="ctx-shortcut">Ctrl+X</span></div>
+  <div class="ctx-item" onclick="hideCtxMenu()">粘贴 <span class="ctx-shortcut">Ctrl+V</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideCtxMenu()">插入...</div>
+  <div class="ctx-item" onclick="hideCtxMenu()">删除...</div>
+  <div class="ctx-item" onclick="hideCtxMenu()">清除内容 <span class="ctx-shortcut">Del</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideCtxMenu()">设置单元格格式...</div>
+  <div class="ctx-item" onclick="hideCtxMenu()">排序</div>
+  <div class="ctx-item" onclick="hideCtxMenu()">筛选</div>
+</div>
+
+<!-- ===== 状态栏 ===== -->
+<div class="status-bar">
+  <span class="status-item" id="statusReady">就绪</span>
+  <span class="status-item" id="statusSum">求和: 0</span>
+  <span class="status-item" id="statusCount">计数: 0</span>
+  <span class="status-item" id="statusAvg">平均值: 0</span>
+  <div class="status-right">
+    <span class="status-item" id="statusMode" style="cursor:pointer" title="按M切换游戏模式">模式: 精英</span>
+    <span class="status-item" id="statusDiff" style="cursor:pointer" title="按D切换难度">难度: 普通</span>
+    <span class="status-item">Sheet1</span>
+    <span class="status-item" style="color:#a9d18e">&#9679;</span>
+    <span class="status-item">100%</span>
+    <span class="status-item">&#9636;</span>
+    <span class="status-item zoom"><span>&minus;</span><div class="zoom-bar"><div class="zoom-handle"></div></div><span>+</span></span>
+  </div>
+</div>
+
+<!-- ===== 联机聊天栏（状态栏上方，隐蔽） ===== -->
+<div id="chatBar" style="display:none;align-items:center;padding:2px 12px;background:#f8f8f8;border-top:1px solid #e0e0e0;gap:4px">
+</div>
+<div id="chatInputBar" style="display:none;align-items:center;padding:2px 12px;background:#f8f8f8;border-top:1px solid #e0e0e0;gap:6px">
+  <input id="chatInput" type="text" maxlength="100" placeholder="输入消息..." style="flex:1;border:1px solid #ccc;padding:3px 8px;font-size:12px;border-radius:3px;outline:none" onkeydown="if(event.key==='Enter'){sendChat(this.value);this.value=''}">
+  <button onclick="var i=document.getElementById('chatInput');sendChat(i.value);i.value=''" style="background:#0f6e3d;color:#fff;border:none;padding:3px 10px;font-size:11px;cursor:pointer;border-radius:3px">发送</button>
+  <button onclick="concedeOnline()" style="background:#f0f0f0;color:#999;border:1px solid #ccc;padding:3px 10px;font-size:11px;cursor:pointer;border-radius:3px">认输</button>
+</div>
+
+<!-- ===== 卡牌设计器（浮层） ===== -->
+<div class="designer-overlay" id="designerOverlay">
+  <div class="designer-header">
+    <h2>🎨 卡牌设计器 — 自由创建/编辑卡牌</h2>
+    <button class="designer-btn" onclick="designerNew()">+ 新建</button>
+    <button class="designer-btn" onclick="designerDuplicate()">复制选中</button>
+    <button class="designer-btn" onclick="designerImport()">导入JSON</button>
+    <button class="designer-btn" onclick="designerExport()">导出JSON</button>
+    <button class="designer-btn" onclick="designerReset()">重置内置</button>
+    <button class="designer-btn primary" onclick="closeCardDesigner()">关闭</button>
+  </div>
+  <div class="designer-body">
+    <div class="designer-sidebar">
+      <div class="designer-sidebar-header">
+        <span>卡池（共 <b id="dsTotal">0</b> 张）</span>
+        <button class="add-btn" onclick="designerNew()">+ 新建</button>
+      </div>
+      <div class="designer-search">
+        <input type="text" id="dsSearch" placeholder="🔍 搜索卡牌..." oninput="renderDesignerList()">
+      </div>
+      <div class="designer-list" id="dsList"></div>
+    </div>
+    <div class="designer-main" id="dsMain">
+      <h3>卡牌编辑</h3>
+      <div class="designer-form" id="dsForm"></div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept=".json" style="display:none">
+
+
+<!-- ===== 另存为对话框（伪装 Excel 另存为）===== -->
+<div class="saveas-overlay" id="saveasOverlay">
+  <div class="saveas-box">
+    <div class="saveas-title">
+      <span class="saveas-title-text">另存为</span>
+      <span class="saveas-close" onclick="closeSaveAs()">&times;</span>
+    </div>
+    <div class="saveas-body">
+      <div class="saveas-icon">&#128196;</div>
+      <div class="saveas-content">
+        <div class="saveas-tip">
+          将工作簿 <b id="saveasOldName">Book1</b> 另存为新文件时，可同时修改浏览器窗口标题，便于在不同工作场景下使用合适的文档名称。
+        </div>
+        <div class="saveas-field">
+          <label>文件名：</label>
+          <input type="text" id="saveasInput" maxlength="40" placeholder="例如：Q3销售数据汇总">
+        </div>
+        <div class="saveas-presets">
+          <div class="saveas-presets-label">常用摸鱼伪装模板（点击套用）：</div>
+          <div class="saveas-preset-row">
+            <div class="saveas-preset-btn" onclick="applyPreset('Q3销售数据汇总表.xlsx')">销售数据</div>
+            <div class="saveas-preset-btn" onclick="applyPreset('2026年度预算编制表')">年度预算</div>
+            <div class="saveas-preset-btn" onclick="applyPreset('项目排期表_W38')">项目排期</div>
+            <div class="saveas-preset-btn" onclick="applyPreset('客户调研问卷统计')">客户调研</div>
+            <div class="saveas-preset-btn" onclick="applyPreset('员工绩效评分表')">绩效评分</div>
+            <div class="saveas-preset-btn" onclick="applyPreset('供应商比价分析')">比价分析</div>
+          </div>
+        </div>
+        <div class="saveas-preview">预览：浏览器标题栏将显示为 <b id="saveasPreview">Book1</b></div>
+      </div>
+    </div>
+    <div class="saveas-foot">
+      <button onclick="closeSaveAs()">取消</button>
+      <button class="primary" onclick="confirmSaveAs()">保存(S)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// 英雄技能定义
+// ============================================
+const HERO_POWERS = [
+  {id:'fireblast',name:'火焰冲击',cost:2,text:'对任意目标造成2点伤害',effect:{type:'damage',value:2},needTarget:true},
+  {id:'heal',name:'次级治疗',cost:2,text:'恢复英雄2点生命',effect:{type:'heal_hero',value:2},needTarget:false},
+  {id:'summon',name:'召唤训练',cost:2,text:'召唤一个1/1新兵',effect:{type:'summon_hero',name:'新兵',atk:1,hp:1},needTarget:false},
+  {id:'armor',name:'强化武装',cost:2,text:'获得2点护甲',effect:{type:'gain_armor',value:2},needTarget:false},
+];
+
+// ============================================
+// 卡牌定义 (43张)
+// ============================================
+const CARD_POOL = [
+  // === 1费随从 (6张) ===
+  {name:'精灵龙',cost:1,atk:3,hp:2,type:'minion',abilities:[],text:''},
+  {name:'精灵弓箭手',cost:1,atk:2,hp:1,type:'minion',abilities:['battlecry'],text:'战吼：造成1点伤害',effect:{type:'damage',value:1,target:'any'}},
+  {name:'铁皮傀儡',cost:1,atk:1,hp:3,type:'minion',abilities:['taunt'],text:'嘲讽'},
+  {name:'烈焰小鬼',cost:1,atk:3,hp:2,type:'minion',abilities:['charge'],text:'冲锋'},
+  {name:'圣光护卫者',cost:1,atk:1,hp:2,type:'minion',abilities:['divine_shield'],text:'圣盾'},
+  {name:'暗影潜行者',cost:1,atk:2,hp:1,type:'minion',abilities:['deathrattle'],text:'亡语：对敌方英雄造成2点伤害',effect:{type:'damage_enemy_hero',value:2}},
+  // === 2费随从 (6张) ===
+  {name:'河流鳄鱼',cost:2,atk:3,hp:2,type:'minion',abilities:[],text:''},
+  {name:'酒馆老板',cost:2,atk:2,hp:3,type:'minion',abilities:['battlecry'],text:'战吼：恢复英雄3点生命',effect:{type:'heal_hero',value:3}},
+  {name:'暴风城守卫',cost:2,atk:2,hp:2,type:'minion',abilities:['taunt','divine_shield'],text:'嘲讽 圣盾'},
+  {name:'迅狼骑兵',cost:2,atk:3,hp:1,type:'minion',abilities:['charge'],text:'冲锋'},
+  {name:'亡语祭司',cost:2,atk:2,hp:3,type:'minion',abilities:['deathrattle'],text:'亡语：抽一张牌',effect:{type:'draw',value:1}},
+  {name:'风怒战士',cost:2,atk:3,hp:2,type:'minion',abilities:['windfury'],text:'风怒（每回合攻击2次）'},
+  // === 3费随从 (6张) ===
+  {name:'霜狼步兵',cost:3,atk:3,hp:3,type:'minion',abilities:['taunt'],text:'嘲讽'},
+  {name:'暴风城骑士',cost:3,atk:3,hp:5,type:'minion',abilities:['taunt'],text:'嘲讽'},
+  {name:'迷失骑士',cost:3,atk:5,hp:2,type:'minion',abilities:['charge'],text:'冲锋'},
+  {name:'剑圣侍从',cost:3,atk:4,hp:2,type:'minion',abilities:['charge','divine_shield'],text:'冲锋 圣盾'},
+  {name:'黯刃刺客',cost:3,atk:3,hp:3,type:'minion',abilities:['battlecry'],text:'战吼：消灭一个受伤的敌方随从',effect:{type:'destroy',target:'enemy_damaged_minion'}},
+  {name:'圣盾执事',cost:3,atk:3,hp:3,type:'minion',abilities:['divine_shield','deathrattle'],text:'圣盾 亡语：恢复英雄2点生命',effect:{type:'heal_hero',value:2}},
+  // === 4费随从 (6张) ===
+  {name:'暴怒狼人',cost:4,atk:5,hp:4,type:'minion',abilities:[],text:''},
+  {name:'暴风之子',cost:4,atk:3,hp:6,type:'minion',abilities:['taunt'],text:'嘲讽'},
+  {name:'亡灵术士',cost:4,atk:3,hp:3,type:'minion',abilities:['battlecry'],text:'战吼：抽一张牌',effect:{type:'draw',value:1}},
+  {name:'暴食巨魔',cost:4,atk:4,hp:4,type:'minion',abilities:['deathrattle'],text:'亡语：召唤两个1/1食尸鬼',effect:{type:'summon',name:'食尸鬼',atk:1,hp:1,count:2}},
+  {name:'破甲骑士',cost:4,atk:5,hp:2,type:'minion',abilities:['charge'],text:'冲锋'},
+  {name:'银色指挥官',cost:4,atk:4,hp:3,type:'minion',abilities:['divine_shield','charge'],text:'圣盾 冲锋'},
+  // === 5费随从 (5张) ===
+  {name:'银背族长',cost:5,atk:3,hp:4,type:'minion',abilities:['taunt'],text:'嘲讽'},
+  {name:'诺森德幼龙',cost:5,atk:5,hp:6,type:'minion',abilities:[],text:''},
+  {name:'龙喉突击者',cost:5,atk:5,hp:4,type:'minion',abilities:['charge'],text:'冲锋'},
+  {name:'亡语女巫',cost:5,atk:4,hp:5,type:'minion',abilities:['deathrattle'],text:'亡语：对所有敌方随从造成2点伤害',effect:{type:'aoe_enemy',value:2}},
+  {name:'风怒巨人',cost:5,atk:7,hp:5,type:'minion',abilities:['windfury'],text:'风怒'},
+  // === 6-7费随从 (4张) ===
+  {name:'石拳食人魔',cost:6,atk:7,hp:7,type:'minion',abilities:[],text:''},
+  {name:'激怒巨兽',cost:6,atk:6,hp:7,type:'minion',abilities:['enrage'],text:'激怒：受伤时攻击力+3'},
+  {name:'战争魔像',cost:7,atk:9,hp:7,type:'minion',abilities:[],text:''},
+  {name:'远古霜龙',cost:7,atk:7,hp:8,type:'minion',abilities:['taunt','deathrattle'],text:'嘲讽 亡语：对敌方英雄造成3点伤害',effect:{type:'damage_enemy_hero',value:3}},
+  // === 法术 (10张) ===
+  {name:'奥术飞弹',cost:1,type:'spell',text:'随机对敌方造成3点伤害',effect:{type:'random_damage',value:3,target:'enemy_all'}},
+  {name:'治疗术',cost:1,type:'spell',text:'恢复英雄4点生命',effect:{type:'heal_hero',value:4}},
+  {name:'力量祝福',cost:1,type:'spell',text:'使一个友方随从+2/+2',effect:{type:'buff',atk:2,hp:2,target:'friendly_minion'}},
+  {name:'暴风雪',cost:2,type:'spell',text:'对所有敌方随从造成2点伤害',effect:{type:'aoe_damage',value:2,target:'enemy_minions'}},
+  {name:'斩杀',cost:2,type:'spell',text:'消灭一个受伤的敌方随从',effect:{type:'destroy',target:'enemy_damaged_minion'}},
+  {name:'变形术',cost:3,type:'spell',text:'将一个随从变成1/1',effect:{type:'polymorph',target:'any_minion'}},
+  {name:'奥术智慧',cost:3,type:'spell',text:'抽两张牌',effect:{type:'draw',value:2}},
+  {name:'闪电风暴',cost:3,type:'spell',text:'对所有随从造成2点伤害',effect:{type:'aoe_all',value:2}},
+  {name:'火球术',cost:4,type:'spell',text:'造成6点伤害',effect:{type:'damage',value:6,target:'any'}},
+  {name:'神圣新星',cost:5,type:'spell',text:'对所有敌方随从造成2点伤害，恢复己方2点生命',effect:{type:'divine_nova',value:2}},
+];
+
+// ============================================
+// 自定义卡牌（用户通过卡牌设计器创建）
+// 存于localStorage，启动时合并到CARD_POOL
+// ============================================
+function getCustomCards() {
+  try {
+    const s = localStorage.getItem('moyu_cards_custom');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return [];
+}
+
+function saveCustomCards(cards) {
+  localStorage.setItem('moyu_cards_custom', JSON.stringify(cards));
+}
+
+function getMergedCardPool() {
+  // 内置 + 自定义
+  return CARD_POOL.concat(getCustomCards());
+}
+
+// ============================================
+// 全局状态
+// ============================================
+let nextUid = 1;
+let state = null;
+let targetingMode = null;
+let targetingSource = null;
+let workMode = false;
+let aiThinking = false;
+let deckBuilderOpen = false;
+let dbSelections = {};
+let dbHeroPower = 'fireblast';
+let currentSheet = 'Sheet1';
+let helpOpen = false;
+let modeSelectorOpen = false;        // 模式选择器开关
+
+// 游戏模式
+const GAME_MODE = {
+  ELITE: 'elite',       // 精英模式（沿用原逻辑）
+  FAIR: 'fair',         // 公平模式（公共池选牌 + 技能独立随机）
+  ONLINE: 'online',     // 联机对战
+};
+
+// 联机状态
+let onlineState = {
+  connected: false,
+  ws: null,
+  roomCode: null,
+  isHost: false,
+  lobbyOpen: false,
+  waitingForOpponent: false,
+  waitingForSync: false,
+  chatMessages: [],
+};
+
+// ============================================
+// 卡牌实例创建
+// ============================================
+function createCard(c) {
+  return {
+    uid: nextUid++,
+    name: c.name, cost: c.cost, atk: c.atk||0, hp: c.hp||0, maxHp: c.hp||0,
+    type: c.type, abilities: [...(c.abilities||[])], text: c.text||'',
+    effect: c.effect ? JSON.parse(JSON.stringify(c.effect)) : null,
+    attacksLeft: 0, justPlayed: false,
+  };
+}
+
+// ============================================
+// 有效攻击力（激怒）
+// ============================================
+function effAtk(m) {
+  if (m.abilities.includes('enrage') && m.hp < m.maxHp) return m.atk + 3;
+  return m.atk;
+}
+
+// ============================================
+// 关键词标签渲染
+// ============================================
+function renderAbilities(m) {
+  let tags = '';
+  if (m.abilities.includes('taunt')) tags += '<span class="kw-tag kw-taunt">嘲讽</span>';
+  if (m.abilities.includes('charge')) tags += '<span class="kw-tag kw-charge">冲锋</span>';
+  if (m.abilities.includes('divine_shield')) tags += '<span class="kw-tag kw-shield">圣盾</span>';
+  if (m.abilities.includes('deathrattle')) tags += '<span class="kw-tag kw-deathrattle">亡语</span>';
+  if (m.abilities.includes('windfury')) tags += '<span class="kw-tag kw-windfury">风怒</span>';
+  if (m.abilities.includes('enrage')) {
+    const active = m.hp < m.maxHp;
+    tags += '<span class="kw-tag '+(active?'kw-enrage-active':'kw-enrage')+'">激怒'+(active?'!':'')+'</span>';
+  }
+  return tags;
+}
+
+// ============================================
+// 牌库生成
+// ============================================
+function generateDeck() {
+  const pool = getMergedCardPool();
+  const deck = [];
+  for (let i = 0; i < 20; i++) {
+    deck.push(createCard(pool[Math.floor(Math.random()*pool.length)]));
+  }
+  return deck;
+}
+
+function generateDeckFromSelections(sel) {
+  const pool = getMergedCardPool();
+  const deck = [];
+  for (const [index, count] of Object.entries(sel)) {
+    for (let i = 0; i < count; i++) {
+      deck.push(createCard(pool[parseInt(index)]));
+    }
+  }
+  for (let i = deck.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  return deck;
+}
+
+// ============================================
+// 卡组存取
+// ============================================
+function loadDeck() {
+  try {
+    const s = localStorage.getItem('moyu_cards_deck');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return null;
+}
+
+function saveDeck(sel, hp) {
+  localStorage.setItem('moyu_cards_deck', JSON.stringify({selections:sel, heroPower:hp}));
+}
+
+// ============================================
+// 初始化游戏
+// ============================================
+function initGame(mode) {
+  nextUid = 1;
+  targetingMode = null;
+  targetingSource = null;
+  aiThinking = false;
+  mode = mode || state?.gameMode || GAME_MODE.ELITE;
+  const saved = loadDeck();
+  const diff = state ? state.difficulty : 'normal';
+  state = {
+    player: {hp:30,armor:0,mana:0,maxMana:0,deck:[],hand:[],board:[],fatigue:0,heroPower:'fireblast',powerUsed:false},
+    enemy:  {hp:30,armor:0,mana:0,maxMana:0,deck:[],hand:[],board:[],fatigue:0,heroPower:'fireblast',powerUsed:false},
+    turn: 1, currentPlayer: 'player', log: [], gameOver: false, winner: null,
+    stats: {damageDealt:0, minionsPlayed:0, spellsCast:0},
+    difficulty: diff,
+    gameMode: mode,
+  };
+
+  if (mode === GAME_MODE.FAIR) {
+    // 公平模式：公共池洗牌后双方轮流抽（玩家先），每方约 30 张
+    const pool = buildFairPool();
+    const flat = [];
+    pool.forEach(entry => {
+      for (let i = 0; i < entry.quota; i++) flat.push(entry.card);
+    });
+    // 洗牌
+    for (let i = flat.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [flat[i], flat[j]] = [flat[j], flat[i]];
+    }
+    // 双方轮流抽（玩家先），双方牌库天然互斥
+    const target = Math.floor(flat.length / 2);
+    for (let i = 0; i < target; i++) {
+      if (flat.length > 0) state.player.deck.push(createCard(flat.pop()));
+      if (flat.length > 0) state.enemy.deck.push(createCard(flat.pop()));
+    }
+    // 双方英雄技能独立随机（可相同）
+    state.player.heroPower = HERO_POWERS[Math.floor(Math.random()*HERO_POWERS.length)].id;
+    state.enemy.heroPower  = HERO_POWERS[Math.floor(Math.random()*HERO_POWERS.length)].id;
+  } else {
+    // 精英模式（原逻辑）
+    if (saved && Object.values(saved.selections).reduce((a,b)=>a+b,0) === 20) {
+      state.player.deck = generateDeckFromSelections(saved.selections);
+      state.player.heroPower = saved.heroPower || HERO_POWERS[Math.floor(Math.random()*HERO_POWERS.length)].id;
+    } else {
+      state.player.deck = generateDeck();
+      state.player.heroPower = HERO_POWERS[Math.floor(Math.random()*HERO_POWERS.length)].id;
+    }
+    state.enemy.deck = generateDeck();
+    state.enemy.heroPower = HERO_POWERS[Math.floor(Math.random()*HERO_POWERS.length)].id;
+  }
+
+  for (let i = 0; i < 3; i++) { drawCard('player'); drawCard('enemy'); }
+  drawCard('enemy');
+  // 日志显示本局双方英雄技能
+  const pPow = HERO_POWERS.find(x => x.id === state.player.heroPower);
+  const ePow = HERO_POWERS.find(x => x.id === state.enemy.heroPower);
+  const modeLabel = mode === GAME_MODE.FAIR ? '⚖ 公平模式（公共卡池）' : '👑 精英模式';
+  log('🎮 模式: '+modeLabel);
+  log('🎲 你的本局技能: ' + pPow.name + ' | 对手本局技能: ' + ePow.name);
+  startTurn('player');
+}
+
+function drawCard(p) {
+  const pl = state[p];
+  if (pl.deck.length === 0) {
+    pl.fatigue++;
+    pl.hp -= pl.fatigue;
+    log((p==='player'?'你':'对手')+'因牌库耗尽受到'+pl.fatigue+'点疲劳伤害');
+    checkGameOver();
+    return;
+  }
+  const card = pl.deck.pop();
+  if (pl.hand.length >= 7) { log(card.name+'被烧毁（手牌已满）'); return; }
+  pl.hand.push(card);
+}
+
+function startTurn(p) {
+  const pl = state[p];
+  pl.maxMana = Math.min(pl.maxMana+1, 10);
+  pl.mana = pl.maxMana;
+  pl.powerUsed = false;
+  pl.board.forEach(m => {
+    m.justPlayed = false;
+    m.attacksLeft = m.abilities.includes('windfury') ? 2 : 1;
+  });
+  drawCard(p);
+  log('-- '+(p==='player'?'你的':'对手的')+'回合 (回合'+state.turn+') --');
+  state.currentPlayer = p;
+  render();
+  if (p === 'enemy' && !onlineState.connected) { aiThinking = true; setTimeout(aiPlayPhase, 1200); }
+}
+
+function endTurn() {
+  if (state.currentPlayer !== 'player' || aiThinking || state.gameOver) return;
+  if (onlineState.connected) {
+    targetingMode = null; targetingSource = null;
+    if (onlineState.isHost) {
+      state.turn++;
+      startTurnOnline('enemy');
+      sendSyncState();
+    } else {
+      onlineSendAction('end_turn', {});
+    }
+    return;
+  }
+  targetingMode = null; targetingSource = null;
+  state.turn++;
+  startTurn('enemy');
+}
+
+function endEnemyTurn() {
+  aiThinking = false;
+  state.turn++;
+  startTurn('player');
+}
+
+// ============================================
+// 伤害处理（统一入口，含圣盾/死亡/亡语）
+// ============================================
+function dealDamageToMinion(player, uid, dmg) {
+  const m = state[player].board.find(x => x.uid === uid);
+  if (!m || dmg <= 0) return;
+  if (m.abilities.includes('divine_shield')) {
+    m.abilities = m.abilities.filter(a => a !== 'divine_shield');
+    log(m.name+'的圣盾抵消了伤害');
+    return;
+  }
+  m.hp -= dmg;
+  if (m.hp <= 0) {
+    state[player].board = state[player].board.filter(x => x.uid !== uid);
+    log(m.name+' 被消灭');
+    if (m.abilities.includes('deathrattle') && m.effect) {
+      triggerDeathrattle(player, m);
+    }
+  }
+}
+
+function dealDamageToHero(player, dmg) {
+  const t = state[player];
+  let d = dmg;
+  if (t.armor > 0) { const a = Math.min(t.armor, d); t.armor -= a; d -= a; }
+  t.hp -= d;
+  return d;
+}
+
+// ============================================
+// 亡语触发
+// ============================================
+function triggerDeathrattle(player, minion) {
+  const eff = minion.effect;
+  if (!eff) return;
+  const enemy = player === 'player' ? 'enemy' : 'player';
+  log(minion.name+'的亡语触发！');
+  switch(eff.type) {
+    case 'damage_enemy_hero':
+      const d = dealDamageToHero(enemy, eff.value);
+      log('  对'+(enemy==='player'?'你':'对手')+'英雄造成'+eff.value+'点伤害');
+      break;
+    case 'draw':
+      for (let i = 0; i < eff.value; i++) drawCard(player);
+      log('  抽'+eff.value+'张牌');
+      break;
+    case 'heal_hero':
+      state[player].hp = Math.min(state[player].hp + eff.value, 30);
+      log('  恢复'+eff.value+'点生命');
+      break;
+    case 'summon':
+      for (let i = 0; i < eff.count; i++) {
+        if (state[player].board.length >= 7) break;
+        const token = createCard({name:eff.name, cost:0, atk:eff.atk, hp:eff.hp, type:'minion', abilities:[], text:''});
+        token.justPlayed = true;
+        token.attacksLeft = 0;
+        state[player].board.push(token);
+      }
+      log('  召唤'+eff.count+'个'+eff.name);
+      break;
+    case 'aoe_enemy':
+      const targets = state[enemy].board.map(m => m.uid);
+      targets.forEach(uid => dealDamageToMinion(enemy, uid, eff.value));
+      log('  对所有敌方随从造成'+eff.value+'点伤害');
+      break;
+  }
+  checkGameOver();
+}
+
+// ============================================
+// 出牌
+// ============================================
+function tryPlayCard(handIndex) {
+  if (state.currentPlayer !== 'player' || aiThinking || state.gameOver || deckBuilderOpen) return;
+  if (onlineState.connected && onlineState.waitingForSync) return;
+  const card = state.player.hand[handIndex];
+  if (!card) return;
+  if (card.cost > state.player.mana) { log('法力不足！'); flashRow('hand-'+handIndex); return; }
+  if (card.type === 'minion' && state.player.board.length >= 7) { log('场地已满！'); return; }
+
+  const targetFilter = card.effect?.target;
+  const needsTarget = targetFilter && targetFilter !== 'enemy_all' && targetFilter !== 'enemy_minions'
+    && !(['heal_hero','draw','random_damage','aoe_damage','aoe_all','divine_nova'].includes(card.effect?.type));
+
+  if (needsTarget) {
+    // 检查是否有合法目标
+    if (!hasValidTarget(targetFilter, 'player')) { log('没有合法目标！'); flashRow('hand-'+handIndex); return; }
+    targetingMode = card.type === 'spell' ? 'spell' : 'battlecry';
+    targetingSource = {handIndex, targetFilter};
+    render();
+    return;
+  }
+  playCard('player', handIndex, null);
+}
+
+function hasValidTarget(filter, p) {
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  if (filter === 'any') {
+    if (state[enemy].board.length > 0 || state[enemy].hp > 0) return true;
+    if (state[p].board.length > 0 || state[p].hp > 0) return true;
+  } else if (filter === 'any_minion') {
+    return state[enemy].board.length > 0 || state[p].board.length > 0;
+  } else if (filter === 'enemy_damaged_minion') {
+    return state[enemy].board.some(m => m.hp < m.maxHp);
+  } else if (filter === 'friendly_minion') {
+    return state[p].board.length > 0;
+  }
+  return false;
+}
+
+function isValidTarget(targetPlayer, targetType, targetUid, filter) {
+  switch(filter) {
+    case 'any': return true;
+    case 'any_minion': return targetType === 'minion';
+    case 'enemy_damaged_minion':
+      if (targetType !== 'minion') return false;
+      if (targetPlayer === state.currentPlayer) return false;
+      const m1 = state[targetPlayer].board.find(x => x.uid === targetUid);
+      return m1 && m1.hp < m1.maxHp;
+    case 'friendly_minion':
+      if (targetType !== 'minion') return false;
+      return targetPlayer === state.currentPlayer;
+    default: return true;
+  }
+}
+
+function playCard(p, handIndex, target) {
+  if (onlineState.connected && !onlineState.isHost && p === 'player') {
+    onlineSendAction('play_card', { handIndex, target });
+    return false;
+  }
+  const pl = state[p];
+  const card = pl.hand[handIndex];
+  if (!card) return false;
+  pl.hand.splice(handIndex, 1);
+  pl.mana -= card.cost;
+
+  if (card.type === 'minion') {
+    card.attacksLeft = card.abilities.includes('charge') ? 1 : 0;
+    card.justPlayed = true;
+    pl.board.push(card);
+    if (p === 'player') state.stats.minionsPlayed++;
+    log((p==='player'?'你':'对手')+'召唤了 '+card.name);
+    if (card.abilities.includes('battlecry') && card.effect) {
+      resolveBattlecry(p, card, target);
+    }
+  } else if (card.type === 'spell') {
+    if (p === 'player') state.stats.spellsCast++;
+    log((p==='player'?'你':'对手')+'施放了 '+card.name);
+    resolveSpell(p, card, target);
+  }
+  checkGameOver();
+  render();
+  if (onlineState.connected && onlineState.isHost && p === 'player') sendSyncState();
+  return true;
+}
+
+// ============================================
+// 攻击
+// ============================================
+function selectMinion(uid) {
+  if (state.currentPlayer !== 'player' || aiThinking || state.gameOver || deckBuilderOpen) return;
+  if (onlineState.connected && onlineState.waitingForSync) return;
+  if (targetingMode === 'attack' && targetingSource?.uid === uid) {
+    targetingMode = null; targetingSource = null; render(); return;
+  }
+  if (targetingMode === 'spell' || targetingMode === 'battlecry' || targetingMode === 'heropower') {
+    resolveTarget('player', 'minion', uid);
+    return;
+  }
+  const m = state.player.board.find(x => x.uid === uid);
+  if (!m || m.attacksLeft <= 0) return;
+  targetingMode = 'attack';
+  targetingSource = {uid};
+  render();
+}
+
+function resolveTarget(targetPlayer, targetType, targetUid) {
+  if (!targetingMode) return;
+  if (onlineState.connected && onlineState.waitingForSync) return;
+  if (targetingMode === 'attack') {
+    doAttack('player', targetingSource.uid, targetPlayer, targetType, targetUid);
+  } else if (targetingMode === 'spell' || targetingMode === 'battlecry') {
+    playCard('player', targetingSource.handIndex, {type: targetType, player: targetPlayer, uid: targetUid});
+  } else if (targetingMode === 'heropower') {
+    resolveHeroPower('player', targetingSource.power, {type: targetType, player: targetPlayer, uid: targetUid});
+  }
+  targetingMode = null;
+  targetingSource = null;
+  render();
+}
+
+function doAttack(attackerP, attackerUid, targetP, targetType, targetUid) {
+  if (onlineState.connected && !onlineState.isHost && attackerP === 'player') {
+    onlineSendAction('attack', { attackerUid, targetPlayer: targetP, targetType, targetUid });
+    return;
+  }
+  const attacker = state[attackerP].board.find(m => m.uid === attackerUid);
+  if (!attacker || attacker.attacksLeft <= 0) return;
+  const enemyBoard = state[targetP].board;
+  const hasTaunt = enemyBoard.some(m => m.abilities.includes('taunt'));
+  if (hasTaunt) {
+    if (targetType === 'hero') return;
+    const t = enemyBoard.find(m => m.uid === targetUid);
+    if (!t || !t.abilities.includes('taunt')) return;
+  }
+  attacker.attacksLeft--;
+  const aAtk = effAtk(attacker);
+
+  if (targetType === 'hero') {
+    const actualDmg = dealDamageToHero(targetP, aAtk);
+    if (attackerP === 'player') state.stats.damageDealt += actualDmg;
+    log(attacker.name+'('+aAtk+') 攻击'+(targetP==='player'?'你':'对手')+'英雄，造成'+aAtk+'点伤害');
+  } else {
+    const target = enemyBoard.find(m => m.uid === targetUid);
+    if (!target) return;
+    log(attacker.name+'('+aAtk+'/'+attacker.hp+') -> '+target.name+'('+effAtk(target)+'/'+target.hp+')');
+    // 攻击者打目标
+    dealDamageToMinion(targetP, targetUid, aAtk);
+    // 如果目标存活（圣盾可能使其未受伤），反击
+    const targetAlive = state[targetP].board.find(m => m.uid === targetUid);
+    if (targetAlive) {
+      const tAtk = effAtk(targetAlive);
+      dealDamageToMinion(attackerP, attackerUid, tAtk);
+    }
+  }
+  checkGameOver();
+  render();
+  if (onlineState.connected && onlineState.isHost && attackerP === 'player') sendSyncState();
+}
+
+// ============================================
+// 法术效果
+// ============================================
+function resolveSpell(p, card, target) {
+  const pl = state[p];
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  const eff = card.effect;
+  switch(eff.type) {
+    case 'damage':
+      if (target.type === 'hero') {
+        const d = dealDamageToHero(target.player, eff.value);
+        if (p === 'player') state.stats.damageDealt += d;
+      } else {
+        dealDamageToMinion(target.player, target.uid, eff.value);
+      }
+      log(card.name+' 造成'+eff.value+'点伤害');
+      break;
+    case 'aoe_damage':
+      state[enemy].board.map(m=>m.uid).forEach(uid => dealDamageToMinion(enemy, uid, eff.value));
+      log(card.name+' 对所有敌方随从造成'+eff.value+'点伤害');
+      break;
+    case 'aoe_all':
+      ['player','enemy'].forEach(pl2 => {
+        state[pl2].board.map(m=>m.uid).forEach(uid => dealDamageToMinion(pl2, uid, eff.value));
+      });
+      log(card.name+' 对所有随从造成'+eff.value+'点伤害');
+      break;
+    case 'random_damage':
+      let hits = eff.value;
+      while (hits > 0 && !state.gameOver) {
+        const tgs = [];
+        state[enemy].board.forEach(m => tgs.push({type:'minion',uid:m.uid}));
+        tgs.push({type:'hero'});
+        const h = tgs[Math.floor(Math.random()*tgs.length)];
+        if (h.type === 'hero') dealDamageToHero(enemy, 1);
+        else dealDamageToMinion(enemy, h.uid, 1);
+        hits--;
+      }
+      log(card.name+' 造成'+eff.value+'点随机伤害');
+      break;
+    case 'heal_hero':
+      pl.hp = Math.min(pl.hp + eff.value, 30);
+      log(card.name+' 恢复'+eff.value+'点生命');
+      break;
+    case 'draw':
+      for (let i = 0; i < eff.value; i++) drawCard(p);
+      log(card.name+'：抽'+eff.value+'张牌');
+      break;
+    case 'polymorph':
+      if (target?.type === 'minion') {
+        const m = state[target.player].board.find(x => x.uid === target.uid);
+        if (m) {
+          m.atk = 1; m.hp = 1; m.maxHp = 1;
+          m.abilities = []; m.text = '被变形'; m.effect = null;
+          log(m.name+' 被变形为1/1绵羊');
+        }
+      }
+      break;
+    case 'destroy':
+      if (target?.type === 'minion') {
+        const m = state[target.player].board.find(x => x.uid === target.uid);
+        if (m) {
+          state[target.player].board = state[target.player].board.filter(x => x.uid !== target.uid);
+          log(m.name+' 被消灭');
+          if (m.abilities.includes('deathrattle') && m.effect) triggerDeathrattle(target.player, m);
+        }
+      }
+      break;
+    case 'buff':
+      if (target?.type === 'minion') {
+        const m = state[target.player].board.find(x => x.uid === target.uid);
+        if (m) {
+          m.atk += eff.atk; m.hp += eff.hp; m.maxHp += eff.hp;
+          log(m.name+' 获得+'+eff.atk+'/+'+eff.hp);
+        }
+      }
+      break;
+    case 'divine_nova':
+      state[enemy].board.map(m=>m.uid).forEach(uid => dealDamageToMinion(enemy, uid, eff.value));
+      pl.hp = Math.min(pl.hp + eff.value, 30);
+      pl.board.forEach(m => { m.hp = Math.min(m.hp + eff.value, m.maxHp); });
+      log(card.name+'：敌方随从-'+eff.value+'HP，己方+'+eff.value+'HP');
+      break;
+  }
+  checkGameOver();
+}
+
+// ============================================
+// 战吼效果
+// ============================================
+function resolveBattlecry(p, card, target) {
+  const pl = state[p];
+  const eff = card.effect;
+  if (!eff) return;
+  switch(eff.type) {
+    case 'damage':
+      if (target) {
+        if (target.type === 'hero') dealDamageToHero(target.player, eff.value);
+        else dealDamageToMinion(target.player, target.uid, eff.value);
+        log(card.name+'的战吼造成'+eff.value+'点伤害');
+      }
+      break;
+    case 'heal_hero':
+      pl.hp = Math.min(pl.hp + eff.value, 30);
+      log(card.name+'的战吼恢复'+eff.value+'点生命');
+      break;
+    case 'draw':
+      for (let i = 0; i < eff.value; i++) drawCard(p);
+      log(card.name+'的战吼：抽'+eff.value+'张牌');
+      break;
+    case 'destroy':
+      if (target?.type === 'minion') {
+        const m = state[target.player].board.find(x => x.uid === target.uid);
+        if (m) {
+          state[target.player].board = state[target.player].board.filter(x => x.uid !== target.uid);
+          log(m.name+' 被'+card.name+'的战吼消灭');
+          if (m.abilities.includes('deathrattle') && m.effect) triggerDeathrattle(target.player, m);
+        }
+      }
+      break;
+  }
+  checkGameOver();
+}
+
+// ============================================
+// 英雄技能
+// ============================================
+function tryUseHeroPower() {
+  if (state.currentPlayer !== 'player' || aiThinking || state.gameOver || deckBuilderOpen) return;
+  if (onlineState.connected && onlineState.waitingForSync) return;
+  const pl = state.player;
+  if (pl.powerUsed) { log('英雄技能本回合已使用'); return; }
+  const power = HERO_POWERS.find(hp => hp.id === pl.heroPower);
+  if (!power || pl.mana < power.cost) { log('法力不足使用英雄技能'); return; }
+  if (power.needTarget) {
+    if (!hasValidTarget('any', 'player')) { log('没有合法目标'); return; }
+    targetingMode = 'heropower';
+    targetingSource = {power, targetFilter:'any'};
+    render();
+    return;
+  }
+  resolveHeroPower('player', power, null);
+}
+
+function resolveHeroPower(p, power, target) {
+  if (onlineState.connected && !onlineState.isHost && p === 'player') {
+    onlineSendAction('hero_power', { powerId: power.id, target });
+    return;
+  }
+  const pl = state[p];
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  pl.mana -= power.cost;
+  pl.powerUsed = true;
+  const eff = power.effect;
+  switch(eff.type) {
+    case 'damage':
+      if (target.type === 'hero') {
+        const d = dealDamageToHero(target.player, eff.value);
+        if (p === 'player') state.stats.damageDealt += d;
+      } else {
+        dealDamageToMinion(target.player, target.uid, eff.value);
+      }
+      break;
+    case 'heal_hero':
+      pl.hp = Math.min(pl.hp + eff.value, 30);
+      break;
+    case 'summon_hero':
+      if (pl.board.length < 7) {
+        const token = createCard({name:eff.name, cost:0, atk:eff.atk, hp:eff.hp, type:'minion', abilities:[], text:''});
+        token.justPlayed = true;
+        token.attacksLeft = 0;
+        pl.board.push(token);
+      }
+      break;
+    case 'gain_armor':
+      pl.armor += eff.value;
+      break;
+  }
+  log((p==='player'?'你':'对手')+'使用了['+power.name+']');
+  checkGameOver();
+  render();
+  if (onlineState.connected && onlineState.isHost && p === 'player') sendSyncState();
+}
+
+// ============================================
+// AI 逻辑（三档难度）
+// ============================================
+function aiPlayPhase() {
+  if (state.gameOver) return;
+  const diff = state.difficulty;
+  let acted = false;
+  if (diff === 'easy') acted = aiPlayEasy();
+  else if (diff === 'hard') acted = aiPlayHard();
+  else acted = aiPlayNormal();
+
+  if (acted && !state.gameOver) {
+    setTimeout(aiPlayPhase, 1000);
+  } else {
+    setTimeout(aiAttackPhase, 1000);
+  }
+}
+
+function aiSelectTarget(c, p) {
+  const ai = state[p];
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  const filter = c.effect?.target;
+  if (!filter || ['enemy_all','enemy_minions'].includes(filter)) return null;
+  if (filter === 'any') {
+    if (c.effect.type === 'damage') {
+      if (state[enemy].board.length > 0) {
+        const shielded = state[enemy].board.filter(m => m.abilities.includes('divine_shield'));
+        if (shielded.length > 0) return {type:'minion',player:enemy,uid:shielded[0].uid};
+        const killable = state[enemy].board.filter(m => m.hp <= c.effect.value);
+        if (killable.length > 0) return {type:'minion',player:enemy,uid:killable.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b).uid};
+        const best = state[enemy].board.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b);
+        return {type:'minion',player:enemy,uid:best.uid};
+      }
+      return {type:'hero',player:enemy};
+    }
+  } else if (filter === 'any_minion') {
+    if (state[enemy].board.length > 0) {
+      const best = state[enemy].board.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b);
+      return {type:'minion',player:enemy,uid:best.uid};
+    }
+    if (ai.board.length > 0) {
+      const best = ai.board.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b);
+      return {type:'minion',player:p,uid:best.uid};
+    }
+  } else if (filter === 'enemy_damaged_minion') {
+    const damaged = state[enemy].board.filter(m => m.hp < m.maxHp);
+    if (damaged.length > 0) return {type:'minion',player:enemy,uid:damaged.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b).uid};
+    return null;
+  } else if (filter === 'friendly_minion') {
+    if (ai.board.length > 0) return {type:'minion',player:p,uid:ai.board.reduce((a,b)=>effAtk(a)>effAtk(b)?a:b).uid};
+    return null;
+  }
+  return null;
+}
+
+// ============================================
+// 困难AI辅助函数（费用全规划 + 全局攻击规划）
+// ============================================
+
+function evaluatePosition(aiSide, oppSide) {
+  let score = 0;
+  aiSide.board.forEach(m => {
+    score += effAtk(m) * 2 + m.hp + (m.abilities.includes('taunt') ? 3 : 0)
+      + (m.abilities.includes('divine_shield') ? 2 : 0)
+      + (m.abilities.includes('windfury') ? 2 : 0);
+  });
+  oppSide.board.forEach(m => {
+    score -= effAtk(m) * 2 + m.hp + (m.abilities.includes('taunt') ? 3 : 0)
+      + (m.abilities.includes('divine_shield') ? 2 : 0);
+  });
+  score += (aiSide.hp + aiSide.armor) - (oppSide.hp + oppSide.armor);
+  score += (aiSide.hand.length - oppSide.hand.length) * 0.5;
+  if (aiSide.deck.length <= 3) score -= (3 - aiSide.deck.length) * 2;
+  return score;
+}
+
+function calcLethalDamage(ai) {
+  let dmg = 0;
+  ai.board.filter(m => m.attacksLeft > 0).forEach(m => {
+    const atk = effAtk(m);
+    dmg += m.abilities.includes('windfury') ? atk * 2 : atk;
+  });
+  ai.hand.forEach(c => {
+    if (c.type === 'spell' && c.effect?.type === 'damage' && c.effect?.target === 'any' && c.cost <= ai.mana) {
+      dmg += c.effect.value;
+    }
+  });
+  if (!ai.powerUsed && ai.mana >= 2) {
+    const power = HERO_POWERS.find(hp => hp.id === ai.heroPower);
+    if (power && power.id === 'fireblast') dmg += 2;
+  }
+  return dmg;
+}
+
+function scoreCardForPlan(c, ai, posScore) {
+  let s = 0;
+  if (c.type === 'minion') {
+    s += c.atk * 2 + c.hp;
+    s += c.abilities?.includes('taunt') ? 4 : 0;
+    s += c.abilities?.includes('divine_shield') ? 3 : 0;
+    s += c.abilities?.includes('charge') ? 3 : 0;
+    s += c.abilities?.includes('windfury') ? 4 : 0;
+    s += c.abilities?.includes('deathrattle') ? 2 : 0;
+    s += c.abilities?.includes('battlecry') ? 1 : 0;
+    if (posScore > 5 && c.cost >= 5) s += 2;
+    if (posScore < -5 && c.cost <= 3) s += 1;
+    s -= c.cost * 0.5;
+  } else {
+    if (c.effect?.type === 'damage') {
+      s += c.effect.value * 2;
+      const killable = state.player.board.filter(m => m.hp <= c.effect.value);
+      if (killable.length > 0) s += killable.reduce((sum,m) => sum + effAtk(m) + m.hp, 0);
+    } else if (c.effect?.type === 'aoe_damage') {
+      s += c.effect.value * state.player.board.length;
+      if (c.effect.value >= 2 && state.player.board.length >= 2) s += 2;
+    } else if (c.effect?.type === 'buff') {
+      s += ai.board.length > 0 ? 6 : -3;
+    } else if (c.effect?.type === 'draw' || c.effect?.type === 'arcane_intellect') {
+      s += 3;
+      if (ai.hand.length <= 2) s += 3;
+    } else if (c.effect?.type === 'heal_hero') {
+      s += ai.hp < 20 ? (20 - ai.hp) * 0.5 : -5;
+    } else if (c.effect?.type === 'gain_armor') {
+      s += ai.hp <= 15 ? 3 : -3;
+    } else if (c.effect?.type === 'divine_nova') {
+      s += 4;
+      s += state.player.board.filter(m => m.hp <= c.effect.value).length * 3;
+    } else if (c.effect?.type === 'summon_minion' || c.effect?.type === 'summon_hero') {
+      s += (c.effect.atk || 1) * 2 + (c.effect.hp || 1);
+    } else if (c.effect?.type === 'polymorph') {
+      s += state.player.board.some(m => effAtk(m) >= 4 || m.hp >= 5) ? 8 : 2;
+    }
+    s -= c.cost * 0.5;
+  }
+  return s;
+}
+
+function scorePowerForPlan(power, ai) {
+  let s = 0;
+  const enemy = state.player;
+  if (power.id === 'fireblast') {
+    const killable = enemy.board.filter(m => m.hp <= 2);
+    if (killable.length > 0) s += killable.reduce((sum,m) => sum + effAtk(m) + m.hp, 0) * 0.5;
+    if (enemy.board.some(m => m.abilities.includes('divine_shield'))) s += 3;
+    if (enemy.board.length === 0) s += 1;
+    s -= 1;
+  } else if (power.id === 'heal') {
+    s += ai.hp <= 20 ? (20 - ai.hp) * 0.5 : -5;
+  } else if (power.id === 'summon') {
+    s += ai.board.length < 6 ? 3 : -5;
+  } else if (power.id === 'armor') {
+    s += ai.hp <= 15 ? 2 : -3;
+  }
+  return s;
+}
+
+function planBestPlay(ai) {
+  const posScore = evaluatePosition(ai, state.player);
+  const options = [];
+  ai.hand.forEach((c, i) => {
+    if (c.cost > ai.mana) return;
+    if (c.type === 'minion' && ai.board.length >= 7) return;
+    const filter = c.effect?.target;
+    if (filter && !['enemy_all','enemy_minions'].includes(filter)) {
+      if (!hasValidTarget(filter, 'enemy')) return;
+    }
+    options.push({type:'card', card:c, handIndex:i, cost:c.cost, score:scoreCardForPlan(c, ai, posScore)});
+  });
+  if (!ai.powerUsed && ai.mana >= 2) {
+    const power = HERO_POWERS.find(hp => hp.id === ai.heroPower);
+    if (power) {
+      if (power.needTarget) {
+        if (aiSelectHeroPowerTarget('enemy')) {
+          options.push({type:'power', power, cost:power.cost, score:scorePowerForPlan(power, ai)});
+        }
+      } else {
+        options.push({type:'power', power, cost:power.cost, score:scorePowerForPlan(power, ai)});
+      }
+    }
+  }
+  if (options.length === 0) return null;
+  options.sort((a, b) => a.cost - b.cost);
+  const results = [];
+  const maxCombo = Math.min(options.length, 5);
+  function backtrack(idx, remainingMana, used, totalScore, minionSlots) {
+    if (used.length >= maxCombo || idx >= options.length) {
+      const manaUsed = ai.mana - remainingMana;
+      results.push({actions: used.slice(), score: totalScore + manaUsed * 0.6, manaUsed});
+      return;
+    }
+    const opt = options[idx];
+    if (opt.cost <= remainingMana) {
+      const isMinion = opt.type === 'card' && opt.card.type === 'minion';
+      if (!isMinion || minionSlots > 0) {
+        used.push(opt);
+        backtrack(idx + 1, remainingMana - opt.cost, used, totalScore + opt.score, isMinion ? minionSlots - 1 : minionSlots);
+        used.pop();
+      }
+    }
+    backtrack(idx + 1, remainingMana, used, totalScore, minionSlots);
+  }
+  backtrack(0, ai.mana, [], 0, 7 - ai.board.length);
+  if (results.length === 0 || results[0].actions.length === 0) return null;
+  results.sort((a, b) => b.score - a.score);
+  const best = results[0];
+  const minionActions = best.actions.filter(a => a.type === 'card' && a.card.type === 'minion');
+  const otherActions = best.actions.filter(a => !(a.type === 'card' && a.card.type === 'minion'));
+  if (minionActions.length > 0) {
+    minionActions.sort((a, b) => b.score - a.score);
+    best.firstAction = minionActions[0];
+  } else {
+    otherActions.sort((a, b) => b.score - a.score);
+    best.firstAction = otherActions[0];
+  }
+  return best;
+}
+
+function executePlanAction(action) {
+  if (action.type === 'power') {
+    const power = HERO_POWERS.find(hp => hp.id === state.enemy.heroPower);
+    const target = power.needTarget ? aiSelectHeroPowerTarget('enemy') : null;
+    resolveHeroPower('enemy', power, target);
+  } else {
+    const target = aiSelectTarget(action.card, 'enemy');
+    playCard('enemy', action.handIndex, target);
+  }
+}
+
+function planAttacks(ai, attackers) {
+  const playerBoard = state.player.board;
+  const taunts = playerBoard.filter(m => m.abilities.includes('taunt'));
+  const player = state.player;
+  const totalDmg = attackers.reduce((s,m) => {
+    const atk = effAtk(m);
+    return s + (m.abilities.includes('windfury') ? atk * 2 : atk);
+  }, 0);
+  if (taunts.length === 0 && totalDmg >= player.hp + player.armor) {
+    return attackers.map(m => ({attacker:m, targetType:'hero', targetUid:null}));
+  }
+  if (taunts.length > 0) {
+    const plan = [];
+    const remainingTaunts = [...taunts];
+    const sorted = [...attackers].sort((a, b) => effAtk(a) - effAtk(b));
+    for (const attacker of sorted) {
+      if (remainingTaunts.length === 0) {
+        plan.push({attacker, targetType:'hero', targetUid:null});
+        continue;
+      }
+      const aAtk = effAtk(attacker);
+      const killable = remainingTaunts.filter(t => t.hp <= aAtk);
+      if (killable.length > 0) {
+        killable.sort((a, b) => (effAtk(b) + b.hp) - (effAtk(a) + a.hp));
+        const target = killable[0];
+        plan.push({attacker, targetType:'minion', targetUid:target.uid});
+        remainingTaunts.splice(remainingTaunts.indexOf(target), 1);
+      } else {
+        const target = remainingTaunts.sort((a, b) => a.hp - b.hp)[0];
+        plan.push({attacker, targetType:'minion', targetUid:target.uid});
+        if (target.hp <= aAtk) remainingTaunts.splice(remainingTaunts.indexOf(target), 1);
+      }
+    }
+    return plan;
+  }
+  const plan = [];
+  const remainingBoard = [...playerBoard];
+  const sortedAttackers = [...attackers].sort((a, b) => effAtk(b) - effAtk(a));
+  for (const attacker of sortedAttackers) {
+    const aAtk = effAtk(attacker);
+    const attackerHp = attacker.hp;
+    const shielded = remainingBoard.filter(m => m.abilities.includes('divine_shield'));
+    if (shielded.length > 0 && aAtk <= 3) {
+      const bestShield = shielded.sort((a, b) => (effAtk(b) + b.hp) - (effAtk(a) + a.hp))[0];
+      plan.push({attacker, targetType:'minion', targetUid:bestShield.uid});
+      continue;
+    }
+    const tradeable = remainingBoard.filter(m => m.hp <= aAtk && effAtk(m) < attackerHp);
+    if (tradeable.length > 0) {
+      const target = tradeable.sort((a, b) => (effAtk(b) + b.hp) - (effAtk(a) + a.hp))[0];
+      plan.push({attacker, targetType:'minion', targetUid:target.uid});
+      remainingBoard.splice(remainingBoard.indexOf(target), 1);
+      continue;
+    }
+    plan.push({attacker, targetType:'hero', targetUid:null});
+  }
+  return plan;
+}
+
+function executeAttackPlan(plan, idx) {
+  if (state.gameOver || idx >= plan.length) {
+    // 检查是否有随从还能攻击（风怒第二次攻击等）
+    const remaining = state.enemy.board.filter(m => m.attacksLeft > 0);
+    if (remaining.length > 0 && !state.gameOver) {
+      const newPlan = planAttacks(state.enemy, remaining);
+      if (newPlan.length > 0) {
+        executeAttackPlan(newPlan, 0);
+        return;
+      }
+    }
+    if (!state.gameOver) setTimeout(endEnemyTurn, 800);
+    else aiThinking = false;
+    return;
+  }
+  const step = plan[idx];
+  if (step.attacker && step.attacker.attacksLeft > 0 && state.enemy.board.find(m => m.uid === step.attacker.uid)) {
+    doAttack('enemy', step.attacker.uid, 'player', step.targetType, step.targetUid);
+  }
+  setTimeout(function(){ executeAttackPlan(plan, idx + 1); }, 800);
+}
+
+function aiPlayEasy() {
+  const ai = state.enemy;
+  const playable = ai.hand.map((c,i)=>({c,i})).filter(({c}) => {
+    if (c.cost > ai.mana) return false;
+    if (c.type === 'minion' && ai.board.length >= 7) return false;
+    return true;
+  });
+  if (playable.length === 0) return false;
+  const pick = playable[Math.floor(Math.random()*playable.length)];
+  const target = aiSelectTarget(pick.c, 'enemy');
+  if (pick.c.effect?.target && !target) return false;
+  playCard('enemy', pick.i, target);
+  return true;
+}
+
+function aiPlayNormal() {
+  const ai = state.enemy;
+  // 按费用从高到低
+  const playable = ai.hand.map((c,i)=>({c,i})).filter(({c}) => {
+    if (c.cost > ai.mana) return false;
+    if (c.type === 'minion' && ai.board.length >= 7) return false;
+    const filter = c.effect?.target;
+    if (filter && !['enemy_all','enemy_minions'].includes(filter)) {
+      if (!hasValidTarget(filter, 'enemy')) return false;
+    }
+    return true;
+  }).sort((a,b) => b.c.cost - a.c.cost);
+  if (playable.length === 0) {
+    if (!ai.powerUsed && ai.mana >= 2) return aiUseHeroPower('enemy');
+    return false;
+  }
+  const pick = playable[0];
+  const target = aiSelectTarget(pick.c, 'enemy');
+  playCard('enemy', pick.i, target);
+  return true;
+}
+
+function aiPlayHard() {
+  const ai = state.enemy;
+  const enemy = 'player';
+
+  // 评估函数：使用全局 evaluatePosition（含疲劳风险）
+
+  // 1) 斩杀判定（补全：场攻含风怒 + 法术直伤 + 英雄技能伤害）
+  if (state[enemy].hp > 0) {
+    const myTauntCheck = state[enemy].board.some(m => m.abilities.includes('taunt'));
+    if (!myTauntCheck) {
+      const targetHp = state[enemy].hp + state[enemy].armor;
+      const lethalDmg = calcLethalDamage(ai);
+      if (lethalDmg >= targetHp) {
+        const dmgSpells = ai.hand.map((c,i)=>({c,i})).filter(({c}) =>
+          c.type === 'spell' && c.effect?.type === 'damage' && c.effect?.target === 'any' && c.cost <= ai.mana
+        ).sort((a,b) => b.c.effect.value - a.c.effect.value);
+        if (dmgSpells.length > 0 && dmgSpells[0].c.effect.value >= targetHp) {
+          playCard('enemy', dmgSpells[0].i, {type:'hero',player:enemy});
+          return true;
+        }
+        for (let i = 0; i < dmgSpells.length; i++) {
+          for (let j = i+1; j < dmgSpells.length; j++) {
+            if (dmgSpells[i].c.cost + dmgSpells[j].c.cost <= ai.mana &&
+                dmgSpells[i].c.effect.value + dmgSpells[j].c.effect.value >= targetHp) {
+              playCard('enemy', dmgSpells[i].i, {type:'hero',player:enemy});
+              return true;
+            }
+          }
+        }
+        if (!ai.powerUsed && ai.mana >= 2) {
+          const power = HERO_POWERS.find(hp => hp.id === ai.heroPower);
+          if (power && power.id === 'fireblast') {
+            for (const ds of dmgSpells) {
+              if (ds.c.cost + 2 <= ai.mana && ds.c.effect.value + 2 >= targetHp) {
+                playCard('enemy', ds.i, {type:'hero',player:enemy});
+                return true;
+              }
+            }
+          }
+        }
+        const boardDmg = ai.board.filter(m=>m.attacksLeft>0).reduce((s,m)=>{
+          const atk = effAtk(m);
+          return s + (m.abilities.includes('windfury') ? atk*2 : atk);
+        }, 0);
+        if (dmgSpells.length > 0 && boardDmg + dmgSpells[0].c.effect.value >= targetHp) {
+          playCard('enemy', dmgSpells[0].i, {type:'hero',player:enemy});
+          return true;
+        }
+        if (boardDmg >= targetHp) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // 2) 防斩杀：玩家场攻（含风怒）>= 我方HP时，放嘲讽/技能保命
+  const playerBoardDmg = state[enemy].board.filter(m=>m.attacksLeft>0).reduce((s,m)=>{
+    const atk = effAtk(m);
+    return s + (m.abilities.includes('windfury') ? atk*2 : atk);
+  }, 0);
+  const myTaunts = ai.board.filter(m=>m.abilities.includes('taunt'));
+  if (playerBoardDmg >= ai.hp + ai.armor && myTaunts.length === 0) {
+    const summonTaunt = ai.hand.find((c, i) => {
+      if (c.cost > ai.mana || c.type !== 'minion' || ai.board.length >= 7) return false;
+      return c.abilities?.includes('taunt');
+    });
+    if (summonTaunt) {
+      const i = ai.hand.indexOf(summonTaunt);
+      playCard('enemy', i, null);
+      return true;
+    }
+    if (!ai.powerUsed && ai.mana >= 2) {
+      const power = HERO_POWERS.find(hp => hp.id === ai.heroPower);
+      if (power && power.id === 'armor' && playerBoardDmg < ai.hp + ai.armor + 2) {
+        resolveHeroPower('enemy', power, null);
+        return true;
+      }
+      if (power && power.id === 'heal' && playerBoardDmg < ai.hp + ai.armor + 2) {
+        resolveHeroPower('enemy', power, null);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // 3) AOE时机（我方随从少，对方场面密）
+  if (state[enemy].board.length >= 3 && ai.board.length <= state[enemy].board.length - 1) {
+    const aoes = ai.hand.map((c,i)=>({c,i})).filter(({c}) =>
+      c.type === 'spell' && c.effect?.type === 'aoe_damage' && c.effect?.value >= 1 && c.cost <= ai.mana
+    );
+    // 敌方场上随从总血量 > AOE*敌方随从数 才有价值
+    const enemyTotalHp = state[enemy].board.reduce((s,m)=>s+m.hp, 0);
+    if (aoes.length > 0) {
+      const bestAoe = aoes.reduce((a,b)=> a.c.effect.value > b.c.effect.value ? a : b);
+      // AOE能杀至少2个随从就放
+      const willKill = state[enemy].board.filter(m => m.hp <= bestAoe.c.effect.value).length;
+      if (willKill >= 2) {
+        playCard('enemy', bestAoe.i, null);
+        return true;
+      }
+    }
+  }
+
+  // 4) 神圣新星类（AOE+治疗）大优时就用
+  const healSpell = ai.hand.find((c,i) => c.type === 'spell' && c.effect?.type === 'divine_nova' && c.cost <= ai.mana);
+  if (healSpell && ai.hp <= 18 && state[enemy].board.length >= 2) {
+    const willKill = state[enemy].board.filter(m => m.hp <= healSpell.effect.value).length;
+    if (willKill >= 1) {
+      const i = ai.hand.indexOf(healSpell);
+      playCard('enemy', i, null);
+      return true;
+    }
+  }
+
+  // 5) 硬解高威胁随从（补全：英雄技能补刀2血以下）
+  const highThreat = state[enemy].board.find(m =>
+    m.abilities.includes('divine_shield') ||
+    (m.abilities.includes('taunt') && m.hp >= 4) ||
+    (effAtk(m) >= 5 && m.hp >= 3)
+  );
+  if (highThreat) {
+    const removal = ai.hand.map((c,i)=>({c,i})).filter(({c}) => {
+      if (c.cost > ai.mana || c.type !== 'spell') return false;
+      if (c.effect?.type === 'damage' && c.effect?.target === 'any' && c.effect.value >= highThreat.hp) return true;
+      if (c.effect?.type === 'polymorph') return true;
+      if (c.effect?.type === 'execute' && highThreat.hp < highThreat.maxHp) return true;
+      return false;
+    });
+    if (removal.length > 0) {
+      removal.sort((a,b) => a.c.cost - b.c.cost);
+      const pick = removal[0];
+      const t = aiSelectTarget(pick.c, 'enemy') || {type:'minion',player:enemy,uid:highThreat.uid};
+      playCard('enemy', pick.i, t);
+      return true;
+    }
+    if (!ai.powerUsed && ai.mana >= 2) {
+      const power = HERO_POWERS.find(hp => hp.id === ai.heroPower);
+      if (power && power.id === 'fireblast' && highThreat.hp <= 2) {
+        resolveHeroPower('enemy', power, {type:'minion',player:enemy,uid:highThreat.uid});
+        return true;
+      }
+    }
+  }
+
+  // 6) 费用全规划：枚举出牌组合（含英雄技能），选最优组合第一张执行
+  const plan = planBestPlay(ai);
+  if (plan && plan.firstAction) {
+    executePlanAction(plan.firstAction);
+    return true;
+  }
+
+  // 7) 费用规划无结果，尝试用英雄技能
+  if (!ai.powerUsed && ai.mana >= 2) {
+    return aiUseHeroPower('enemy');
+  }
+
+  return false;
+}
+
+function aiUseHeroPower(p) {
+  const pl = state[p];
+  if (pl.powerUsed || pl.mana < 2) return false;
+  const power = HERO_POWERS.find(hp => hp.id === pl.heroPower);
+  if (!power) return false;
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  const myHp = pl.hp + pl.armor;
+  const oppHp = state[enemy].hp + state[enemy].armor;
+  // 困难AI：根据技能类型和局面判断是否使用
+  if (state.difficulty === 'hard') {
+    if (power.id === 'heal') {
+      // 治疗：HP<=20时使用；满血不用；对手已斩杀线不治疗
+      if (pl.hp >= pl.hp) return false; // 满血
+      if (pl.hp > 20) return false;
+      // 对手场攻超过我方HP时，治疗=等死
+      const lethal = state[enemy].board.filter(m=>m.attacksLeft>0).reduce((s,m)=>s+effAtk(m),0);
+      if (lethal >= pl.hp) return false;
+      resolveHeroPower(p, power, null);
+      return true;
+    }
+    if (power.id === 'armor') {
+      // 护甲：HP低且对手有场面威胁时
+      const enemyAtk = state[enemy].board.filter(m=>m.attacksLeft>0).reduce((s,m)=>s+effAtk(m),0);
+      if (pl.hp <= 15 && enemyAtk > 0) {
+        resolveHeroPower(p, power, null);
+        return true;
+      }
+      return false;
+    }
+    if (power.id === 'summon') {
+      // 召唤：场面有空间且需要嘲讽/站场
+      if (pl.board.length < 6 && oppHp > 6) {
+        resolveHeroPower(p, power, null);
+        return true;
+      }
+      return false;
+    }
+    // fireblast: 走目标选择
+    const target = aiSelectHeroPowerTarget(p);
+    if (!target) return false;
+    resolveHeroPower(p, power, target);
+    return true;
+  }
+  // 普通/简单AI：默认有目标就用
+  if (power.needTarget) {
+    const target = aiSelectHeroPowerTarget(p);
+    if (!target) return false;
+    resolveHeroPower(p, power, target);
+  } else {
+    // 简单AI随机用，非满血才治疗
+    if (power.id === 'heal' && pl.hp >= 28) return false;
+    resolveHeroPower(p, power, null);
+  }
+  return true;
+}
+
+function aiSelectHeroPowerTarget(p) {
+  const enemy = p === 'player' ? 'enemy' : 'player';
+  const power = HERO_POWERS.find(hp => hp.id === state[p].heroPower);
+  if (power.id === 'fireblast') {
+    // 困难AI：复杂判断
+    if (state.difficulty === 'hard') {
+      // 1) 斩杀判定：能直接打死
+      if (state[enemy].hp <= 2 && state[enemy].board.filter(m=>m.abilities.includes('taunt')).length === 0) {
+        return {type:'hero',player:enemy};
+      }
+      // 2) 破圣盾
+      const shielded = state[enemy].board.filter(m => m.abilities.includes('divine_shield'));
+      if (shielded.length > 0) {
+        return {type:'minion',player:enemy,uid:shielded.sort((a,b)=>effAtk(b)-effAtk(a))[0].uid};
+      }
+      // 3) 能补刀杀的随从
+      const killable = state[enemy].board.filter(m => m.hp <= 2);
+      if (killable.length > 0) {
+        return {type:'minion',player:enemy,uid:killable.sort((a,b)=>effAtk(b)-effAtk(a))[0].uid};
+      }
+      // 4) 对方空场，打脸
+      if (state[enemy].board.length === 0) {
+        return {type:'hero',player:enemy};
+      }
+      // 5) 虚弱随从（触发激怒）
+      const enrageTargets = state[enemy].board.filter(m => m.abilities.includes('enrage') && m.hp === m.maxHp);
+      if (enrageTargets.length > 0) {
+        return {type:'minion',player:enemy,uid:enrageTargets[0].uid};
+      }
+      // 6) 默认打最弱
+      const weakest = state[enemy].board.reduce((a,b)=>a.hp<b.hp?a:b);
+      return {type:'minion',player:enemy,uid:weakest.uid};
+    }
+    // 普通/简单AI
+    const shielded = state[enemy].board.filter(m => m.abilities.includes('divine_shield'));
+    if (shielded.length > 0) return {type:'minion',player:enemy,uid:shielded[0].uid};
+    const killable = state[enemy].board.filter(m => m.hp <= 2);
+    if (killable.length > 0) return {type:'minion',player:enemy,uid:killable[0].uid};
+    if (state[enemy].board.length > 0) {
+      const weakest = state[enemy].board.reduce((a,b)=>a.hp<b.hp?a:b);
+      return {type:'minion',player:enemy,uid:weakest.uid};
+    }
+    return {type:'hero',player:enemy};
+  }
+  return null;
+}
+
+function aiAttackPhase() {
+  if (state.gameOver) { aiThinking = false; return; }
+  const ai = state.enemy;
+  const diff = state.difficulty;
+  const attackers = ai.board.filter(m => m.attacksLeft > 0);
+  if (attackers.length === 0) { setTimeout(endEnemyTurn, 800); return; }
+
+  if (diff === 'hard') {
+    // 困难模式：全局攻击规划（斩杀/解嘲讽/最优交换+打脸）
+    const plan = planAttacks(ai, attackers);
+    if (plan.length === 0) { setTimeout(endEnemyTurn, 800); return; }
+    executeAttackPlan(plan, 0);
+  } else {
+    // 简单/普通模式：逐个攻击（保持原逻辑）
+    aiAttackPhaseSimple(diff);
+  }
+}
+
+function aiAttackPhaseSimple(diff) {
+  const ai = state.enemy;
+  const playerBoard = state.player.board;
+  const taunts = playerBoard.filter(m => m.abilities.includes('taunt'));
+  const attacker = ai.board.find(m => m.attacksLeft > 0);
+  if (!attacker) { setTimeout(endEnemyTurn, 800); return; }
+  const aAtk = effAtk(attacker);
+
+  if (taunts.length > 0) {
+    const killable = taunts.filter(m => m.hp <= aAtk);
+    if (killable.length > 0) {
+      const target = killable.sort((a,b) => effAtk(a) - effAtk(b))[0];
+      doAttack('enemy', attacker.uid, 'player', 'minion', target.uid);
+    } else {
+      const target = taunts.sort((a,b) => a.hp - b.hp)[0];
+      doAttack('enemy', attacker.uid, 'player', 'minion', target.uid);
+    }
+  } else if (diff === 'easy') {
+    if (playerBoard.length > 0 && Math.random() < 0.5) {
+      const target = playerBoard[Math.floor(Math.random()*playerBoard.length)];
+      doAttack('enemy', attacker.uid, 'player', 'minion', target.uid);
+    } else {
+      doAttack('enemy', attacker.uid, 'player', 'hero', null);
+    }
+  } else {
+    const potentialDmg = ai.board.filter(m => m.attacksLeft > 0).reduce((s,m) => s + effAtk(m), 0);
+    if (potentialDmg >= state.player.hp) {
+      doAttack('enemy', attacker.uid, 'player', 'hero', null);
+    } else {
+      const killable = playerBoard.filter(m => m.hp <= aAtk && effAtk(m) < attacker.hp);
+      if (killable.length > 0) {
+        const target = killable.reduce((a,b) => effAtk(a) > effAtk(b) ? a : b);
+        doAttack('enemy', attacker.uid, 'player', 'minion', target.uid);
+      } else {
+        doAttack('enemy', attacker.uid, 'player', 'hero', null);
+      }
+    }
+  }
+  if (!state.gameOver) setTimeout(aiAttackPhase, 1000);
+  else aiThinking = false;
+}
+
+// ============================================
+// 游戏结束
+// ============================================
+function checkGameOver() {
+  if (state.gameOver) return;
+  if (state.player.hp <= 0) { state.gameOver = true; state.winner = 'enemy'; log('-- 你的英雄被击败了 --'); }
+  else if (state.enemy.hp <= 0) { state.gameOver = true; state.winner = 'player'; log('-- 对手被击败了！胜利！ --'); }
+}
+
+// ============================================
+// 日志
+// ============================================
+function log(msg) { state.log.push(msg); if (state.log.length > 8) state.log.shift(); }
+
+// ============================================
+// 渲染
+// ============================================
+function render() {
+  const area = document.getElementById('gameArea');
+  // Sheet标签同步
+  const tabs = document.querySelectorAll('.sheet-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  if (tabs.length > 0) { tabs[workMode ? 1 : 0].classList.add('active'); }
+  // 摸鱼模式最高优先级（老板键随时生效，不受任何界面状态影响）
+  if (workMode) {
+    area.innerHTML = renderWorkData();
+    document.getElementById('titleDoc').textContent = '周报数据';
+    document.getElementById('nameBox').value = 'I26';
+    document.getElementById('formulaInput').value = '=SUMIFS(I2:I25,B2:B25,"信息流")';
+    updateStatus();
+    return;
+  }
+  if (onlineState.lobbyOpen) { renderOnlineLobby(); return; }
+  if (modeSelectorOpen) { renderModeSelector(); return; }
+  if (deckBuilderOpen) { renderDeckBuilder(); return; }
+  if (helpOpen) { renderHelp(); return; }
+  document.getElementById('titleDoc').textContent = 'Book1';
+
+  let bannerHtml = '';
+  if (targetingMode) {
+    const filter = targetingSource?.targetFilter || '';
+    const txt = targetingMode === 'attack' ? '选择攻击目标... (ESC取消)'
+      : targetingMode === 'spell' ? '选择法术目标... (ESC取消)'
+      : targetingMode === 'battlecry' ? '选择战吼目标... (ESC取消)'
+      : '选择英雄技能目标... (ESC取消)';
+    const filterHint = filter === 'any_minion' ? ' [仅随从]' : filter === 'enemy_damaged_minion' ? ' [受伤敌方随从]' : filter === 'friendly_minion' ? ' [友方随从]' : '';
+    bannerHtml = '<div class="target-banner" style="display:block">'+txt+filterHint+'</div>';
+  }
+
+  let html = bannerHtml + '<table class="game-table"><colgroup>';
+  [35,110,60,60,70,60,120,70].forEach(w => html += '<col style="width:'+w+'px">');
+  html += '</colgroup>';
+
+  html += '<tr class="col-header"><th></th>';
+  ['A','B','C','D','E','F','G'].forEach(c => html += '<th>'+c+'</th>');
+  html += '</tr>';
+
+  let rn = 1;
+  const e = state.enemy, p = state.player;
+
+  // 敌方英雄
+  const enemyHeroTargetable = targetingMode === 'attack' && !e.board.some(m=>m.abilities.includes('taunt'));
+  const enemyHeroSpellTarget = (targetingMode === 'spell' || targetingMode === 'battlecry' || targetingMode === 'heropower')
+    && isValidTarget('enemy','hero',null, targetingSource?.targetFilter || 'any');
+  const enemyHeroClickable = (enemyHeroTargetable||enemyHeroSpellTarget);
+  const heroClickAttr = enemyHeroClickable ? 'onclick="resolveTarget(\'enemy\',\'hero\',null)"' : '';
+  const heroCls = enemyHeroClickable ? 'target-valid clickable' : '';
+  html += '<tr><td class="row-num">'+(rn++)+'</td>';
+  html += '<td class="enemy-zone '+heroCls+'" style="font-weight:bold" '+heroClickAttr+'>对手英雄</td>';
+  html += '<td class="enemy-zone '+heroCls+' '+(e.hp<=10?'hp-low':'')+'" '+heroClickAttr+'>HP: '+e.hp+'</td>';
+  html += '<td class="enemy-zone '+heroCls+'" '+heroClickAttr+'>护甲: '+e.armor+'</td>';
+  html += '<td class="enemy-zone '+heroCls+' mana-text" '+heroClickAttr+'>法力: '+e.mana+'/'+e.maxMana+'</td>';
+  html += '<td class="enemy-zone '+heroCls+'" '+heroClickAttr+'>牌库: '+e.deck.length+'</td>';
+  html += '<td class="enemy-zone '+heroCls+'" '+heroClickAttr+'>手牌: '+e.hand.length+'</td>';
+  html += '<td class="enemy-zone '+heroCls+'" '+heroClickAttr+'>'+(enemyHeroClickable?'< 点击攻击':'')+'</td>';
+  html += '</tr>';
+
+  // 敌方英雄技能
+  const ePower = HERO_POWERS.find(hp => hp.id === e.heroPower);
+  html += '<tr><td class="row-num">'+(rn++)+'</td>';
+  html += '<td class="power-zone">对手技能</td>';
+  html += '<td class="power-zone" colspan="2">'+ePower.name+' ('+ePower.cost+'费)</td>';
+  html += '<td class="power-zone '+(e.powerUsed?'cant-attack-dot':'can-attack-dot')+'">'+(e.powerUsed?'已使用':'可用')+'</td>';
+  html += '<td class="power-zone" colspan="3" style="font-size:11px;color:#666">'+ePower.text+'</td>';
+  html += '</tr>';
+
+  // 敌方随从
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="section-divider" colspan="7">-- 对手随从 ('+e.board.length+'/7) --</td></tr>';
+  e.board.forEach(m => {
+    const tauntBlocks = e.board.some(x=>x.abilities.includes('taunt'));
+    const isAttackTarget = targetingMode === 'attack' && (!tauntBlocks || m.abilities.includes('taunt'));
+    const isSpellTarget = (targetingMode === 'spell' || targetingMode === 'battlecry' || targetingMode === 'heropower')
+      && isValidTarget('enemy','minion',m.uid, targetingSource?.targetFilter || 'any');
+    const isTarget = isAttackTarget || isSpellTarget;
+    html += '<tr><td class="row-num">'+(rn++)+'</td>';
+    html += '<td class="enemy-minion '+(isTarget?'target-valid clickable':'')+'" onclick="'+(isTarget?'resolveTarget(\'enemy\',\'minion\','+m.uid+')':'')+'">'+m.name+'</td>';
+    html += '<td class="enemy-minion">攻: '+effAtk(m)+'</td>';
+    html += '<td class="enemy-minion '+(m.hp<=2?'hp-low':'')+'">命: '+m.hp+'</td>';
+    html += '<td class="enemy-minion">'+renderAbilities(m)+'</td>';
+    html += '<td class="enemy-minion"></td>';
+    html += '<td class="enemy-minion" style="font-size:11px;color:#888">'+(m.text||'')+'</td>';
+    html += '<td class="enemy-minion"></td></tr>';
+  });
+  if (e.board.length === 0) {
+    html += '<tr><td class="row-num">'+(rn++)+'</td><td class="enemy-minion" colspan="7" style="color:#ccc;text-align:center">（无随从）</td></tr>';
+  }
+
+  // 战斗日志
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="section-divider" colspan="7">-- 战斗日志 --</td></tr>';
+  const logShow = state.log.slice(-5);
+  for (let i = 0; i < 5; i++) {
+    const msg = logShow[i] || '';
+    html += '<tr><td class="row-num">'+(rn++)+'</td><td class="log-zone" colspan="7">'+(msg?'&gt; '+msg:'')+'</td></tr>';
+  }
+
+  // 我方随从
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="section-divider" colspan="7">-- 你的随从 ('+p.board.length+'/7) --</td></tr>';
+  p.board.forEach(m => {
+    const isSelected = targetingMode === 'attack' && targetingSource?.uid === m.uid;
+    const canAttack = m.attacksLeft > 0 && state.currentPlayer === 'player' && !aiThinking;
+    const isSpellTarget = (targetingMode === 'spell' || targetingMode === 'battlecry' || targetingMode === 'heropower')
+      && isValidTarget('player','minion',m.uid, targetingSource?.targetFilter || 'any');
+    const cls = isSelected ? 'selected-minion' : '';
+    const clickFn = canAttack ? 'selectMinion('+m.uid+')' : (isSpellTarget ? 'resolveTarget(\'player\',\'minion\','+m.uid+')' : '');
+    html += '<tr><td class="row-num">'+(rn++)+'</td>';
+    html += '<td class="player-minion '+cls+' '+(canAttack||isSpellTarget?'clickable':'')+' '+(isSpellTarget?'target-valid':'')+'" onclick="'+clickFn+'">'+m.name+'</td>';
+    html += '<td class="player-minion '+cls+'">攻: '+effAtk(m)+'</td>';
+    html += '<td class="player-minion '+cls+' '+(m.hp<=2?'hp-low':'')+'">命: '+m.hp+'</td>';
+    html += '<td class="player-minion '+cls+'">'+(canAttack?'<span class="can-attack-dot">&#9679;可攻击('+m.attacksLeft+')</span>':'<span class="cant-attack-dot">&#9675;休整</span>')+'</td>';
+    html += '<td class="player-minion '+cls+'">'+renderAbilities(m)+'</td>';
+    html += '<td class="player-minion '+cls+'" style="font-size:11px;color:#888">'+(m.text||'')+'</td>';
+    html += '<td class="player-minion '+cls+'"></td></tr>';
+  });
+  if (p.board.length === 0) {
+    html += '<tr><td class="row-num">'+(rn++)+'</td><td class="player-minion" colspan="7" style="color:#ccc;text-align:center">（无随从）</td></tr>';
+  }
+
+  // 我方英雄
+  html += '<tr><td class="row-num">'+(rn++)+'</td>';
+  html += '<td class="hero-zone">你的英雄</td>';
+  html += '<td class="hero-zone '+(p.hp<=10?'hp-low':'')+'">HP: '+p.hp+'</td>';
+  html += '<td class="hero-zone">护甲: '+p.armor+'</td>';
+  html += '<td class="hero-zone mana-text">法力: '+p.mana+'/'+p.maxMana+'</td>';
+  html += '<td class="hero-zone">牌库: '+p.deck.length+'</td>';
+  html += '<td class="hero-zone">手牌: '+p.hand.length+'/7</td>';
+  html += '<td class="hero-zone"></td></tr>';
+
+  // 我方英雄技能
+  const pPower = HERO_POWERS.find(hp => hp.id === p.heroPower);
+  const canUsePower = !p.powerUsed && p.mana >= pPower.cost && state.currentPlayer === 'player' && !aiThinking && !state.gameOver;
+  html += '<tr><td class="row-num">'+(rn++)+'</td>';
+  html += '<td class="power-zone">你的技能</td>';
+  html += '<td class="power-zone" colspan="2">'+pPower.name+' ('+pPower.cost+'费) [H]</td>';
+  html += '<td class="'+(canUsePower?'power-cell':'power-disabled')+'" onclick="'+(canUsePower?'tryUseHeroPower()':'')+'">'+(p.powerUsed?'已使用':'使用技能')+'</td>';
+  html += '<td class="power-zone" colspan="3" style="font-size:11px;color:#666">'+pPower.text+'</td>';
+  html += '</tr>';
+
+  // 回合信息
+  const turnText = state.gameOver ? '-- 游戏结束 --'
+    : aiThinking ? '-- 回合 '+state.turn+' | 对手回合 --'
+    : state.currentPlayer === 'player' ? '-- 回合 '+state.turn+' | 你的回合 --' : '-- 回合 '+state.turn+' | 对手回合 --';
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="turn-zone" colspan="7">'+turnText+'</td></tr>';
+
+  // 手牌
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="section-divider" colspan="7">-- 手牌 ('+p.hand.length+'/7) --</td></tr>';
+  p.hand.forEach((card, i) => {
+    const affordable = card.cost <= p.mana && state.currentPlayer === 'player' && !aiThinking && !state.gameOver;
+    const id = 'hand-'+i;
+    html += '<tr id="'+id+'"><td class="row-num">'+(rn++)+'</td>';
+    if (card.type === 'minion') {
+      html += '<td class="hand-zone '+(affordable?'clickable':'')+'" style="font-weight:bold" onclick="'+(affordable?'tryPlayCard('+i+')':'')+'" title="'+(card.text||'')+'">['+(i+1)+'] '+card.name+'</td>';
+      html += '<td class="hand-zone '+(affordable?'':'mana-insufficient')+'">费: '+card.cost+'</td>';
+      html += '<td class="hand-zone">攻: '+effAtk(card)+'</td>';
+      html += '<td class="hand-zone">命: '+card.hp+'</td>';
+      html += '<td class="hand-zone">'+renderAbilities(card)+'</td>';
+      html += '<td class="hand-zone" style="font-size:11px;color:#666">'+(card.text||'&nbsp;')+'</td>';
+      html += '<td class="hand-zone '+(affordable?'clickable':'')+'" style="color:'+(affordable?'#1b5e20':'#ccc')+';font-weight:bold" onclick="'+(affordable?'tryPlayCard('+i+')':'')+'">'+(affordable?'出牌':'法力不足')+'</td>';
+    } else {
+      html += '<td class="hand-zone '+(affordable?'clickable':'')+'" style="font-weight:bold;color:#6a1b9a" onclick="'+(affordable?'tryPlayCard('+i+')':'')+'" title="'+card.text+'">['+(i+1)+'] '+card.name+'</td>';
+      html += '<td class="hand-zone '+(affordable?'':'mana-insufficient')+'">费: '+card.cost+'</td>';
+      html += '<td class="hand-zone">法术</td>';
+      html += '<td class="hand-zone">-</td>';
+      html += '<td class="hand-zone"></td>';
+      html += '<td class="hand-zone" style="font-size:11px;color:#666">'+card.text+'</td>';
+      html += '<td class="hand-zone '+(affordable?'clickable':'')+'" style="color:'+(affordable?'#1b5e20':'#ccc')+';font-weight:bold" onclick="'+(affordable?'tryPlayCard('+i+')':'')+'">'+(affordable?'施放':'法力不足')+'</td>';
+    }
+    html += '</tr>';
+  });
+
+  // 结束回合
+  const canEndTurn = state.currentPlayer === 'player' && !aiThinking && !state.gameOver && !(onlineState.connected && onlineState.waitingForSync);
+  let endTurnText;
+  if (canEndTurn) endTurnText = '>> 结束回合 (Enter)';
+  else if (onlineState.waitingForSync) endTurnText = '同步中...';
+  else if (onlineState.connected && state.currentPlayer === 'enemy') endTurnText = '等待对手操作...';
+  else endTurnText = '对手回合中...';
+  html += '<tr><td class="row-num">'+(rn++)+'</td><td class="'+(canEndTurn?'end-turn-cell':'end-turn-disabled')+'" colspan="7" onclick="'+(canEndTurn?'endTurn()':'')+'">'+endTurnText+'</td></tr>';
+
+  html += '</table>';
+
+  // 游戏结束遮罩
+  if (state.gameOver) {
+    const win = state.winner === 'player';
+    html += '<div class="game-over-overlay" style="display:flex"><div class="game-over-box">';
+    html += '<h3>'+(win?'&#127942; 对局胜利':'&#128542; 对局失败')+'</h3>';
+    html += '<div class="result-line">总回合数: '+state.turn+'</div>';
+    html += '<div class="result-line">随从召唤: '+state.stats.minionsPlayed+'</div>';
+    html += '<div class="result-line">法术施放: '+state.stats.spellsCast+'</div>';
+    html += '<div class="result-line">总伤害输出: '+state.stats.damageDealt+'</div>';
+    if (state.gameMode === GAME_MODE.ONLINE) {
+      html += '<div class="result-line">模式: 联机对战</div>';
+      html += '<button onclick="openOnlineLobby()">返回联机大厅</button>';
+      html += '<button onclick="modeSelectorOpen=true;onlineState.lobbyOpen=false;render()" style="margin-left:8px">选择其他模式</button>';
+    } else {
+      html += '<div class="result-line">难度: '+({easy:'简单',normal:'普通',hard:'困难'}[state.difficulty])+'</div>';
+      html += '<button onclick="initGame(); render();">开始新对局</button>';
+    }
+    html += '</div></div>';
+  }
+
+  area.innerHTML = html;
+
+  // 名称框
+  if (!targetingMode && p.hand.length > 0) {
+    document.getElementById('nameBox').value = 'A'+(rn - p.hand.length);
+  }
+  // 动态公式栏
+  document.getElementById('formulaInput').value = getFormulaBar();
+  updateStatus();
+}
+
+function getFormulaBar() {
+  if (workMode) return '=SUMIFS(I2:I25,B2:B25,"信息流")';
+  if (helpOpen) return '=HELP(OPERATION_MANUAL)';
+  if (deckBuilderOpen) return '=DATA_ENTRY(DECK_BUILDER)';
+  if (onlineState.lobbyOpen) return '=ONLINE_LOBBY()';
+  if (state.gameOver) return '=GAMEOVER()';
+  if (onlineState.connected && state.gameMode === GAME_MODE.ONLINE) {
+    if (onlineState.waitingForSync) return '=SYNC(WAITING_FOR_HOST)';
+    return '=ONLINE(ROOM:'+onlineState.roomCode+',TURN:'+state.turn+')';
+  }
+  if (aiThinking) return '=COMPUTING(AI_TURN)';
+  if (targetingMode === 'attack') return '=VLOOKUP(TARGET,ENEMY_RANGE)';
+  if (targetingMode === 'spell') return '=VLOOKUP(SPELL_TARGET)';
+  if (targetingMode === 'battlecry') return '=VLOOKUP(BATTLECRY_TARGET)';
+  if (targetingMode === 'heropower') return '=VLOOKUP(HERO_POWER_TARGET)';
+  return '=ROUND(MANA:'+state.player.mana+',TURN:'+state.turn+')';
+}
+
+function updateStatus() {
+  const diffNames = {easy:'简单',normal:'普通',hard:'困难'};
+  document.getElementById('statusDiff').textContent = '难度: ' + (diffNames[state?.difficulty] || '普通');
+  // 模式显示
+  const modeNames = {[GAME_MODE.ELITE]:'精英', [GAME_MODE.FAIR]:'公平', [GAME_MODE.ONLINE]:'联机'};
+  const modeEl = document.getElementById('statusMode');
+  if (modeEl) {
+    modeEl.textContent = '模式: ' + (modeNames[state?.gameMode] || '精英');
+    modeEl.title = state?.gameMode === GAME_MODE.FAIR ? '公平模式（公共池选牌+技能独立随机）'
+      : state?.gameMode === GAME_MODE.ONLINE ? '联机对战（真人对战）'
+      : '精英模式（自定义卡组+技能）';
+  }
+  if (workMode) {
+    document.getElementById('statusReady').textContent = '就绪';
+    document.getElementById('statusSum').textContent = '求和: 1,284,560';
+    document.getElementById('statusCount').textContent = '计数: 24';
+    document.getElementById('statusAvg').textContent = '平均值: 53,523';
+  } else if (helpOpen) {
+    document.getElementById('statusReady').textContent = '帮助';
+    document.getElementById('statusSum').textContent = '求和: -';
+    document.getElementById('statusCount').textContent = '计数: 43';
+    document.getElementById('statusAvg').textContent = '平均值: -';
+  } else {
+    const p = state?.player, e = state?.enemy;
+    if (onlineState.connected && state?.gameMode === GAME_MODE.ONLINE) {
+      document.getElementById('statusReady').textContent = state?.gameOver ? '完成' : (state?.currentPlayer === 'player' ? '你的回合' : '对手回合');
+    } else {
+      document.getElementById('statusReady').textContent = state?.gameOver ? '完成' : (aiThinking ? '计算中' : '就绪');
+    }
+    document.getElementById('statusSum').textContent = '求和: '+((p?.hp||0) + (e?.hp||0));
+    document.getElementById('statusCount').textContent = '计数: '+((p?.board.length||0) + (e?.board.length||0));
+    document.getElementById('statusAvg').textContent = '平均值: '+(state?.turn || 0);
+  }
+  // 联机聊天栏
+  const isOnline = onlineState.connected && state?.gameMode === GAME_MODE.ONLINE;
+  const chatBar = document.getElementById('chatBar');
+  const chatInputBar = document.getElementById('chatInputBar');
+  if (chatBar) {
+    chatBar.style.display = isOnline && !workMode ? 'flex' : 'none';
+    chatInputBar.style.display = isOnline && !workMode && !state?.gameOver ? 'flex' : 'none';
+    if (isOnline) renderChatBar();
+  }
+}
+
+function flashRow(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.background = '#ffcdd2';
+  setTimeout(() => { el.style.background = ''; }, 400);
+}
+
+// ============================================
+// 工作模式数据
+// ============================================
+function renderWorkData() {
+  const channels = ['抖音信息流','快手信息流','微博粉丝通','微信朋友圈','B站信息流','小红书信息流','头条搜索','百度SEM','知乎信息流','QQ浏览器'];
+  const dates = ['2026/06/16','2026/06/17','2026/06/18','2026/06/19','2026/06/20','2026/06/21','2026/06/22'];
+  const data = [['日期','渠道','展示量','点击量','CTR','下载量','注册量','付费人数','收入','ROI(%)']];
+  let totalShow=0,totalClick=0,totalDown=0,totalReg=0,totalPay=0,totalRev=0;
+  for (let d = 0; d < dates.length; d++) {
+    for (let c = 0; c < 3; c++) {
+      const ch = channels[(d*3+c) % channels.length];
+      const show = Math.floor(Math.random()*80000)+20000;
+      const click = Math.floor(show*(0.02+Math.random()*0.04));
+      const ctr = (click/show*100).toFixed(2)+'%';
+      const down = Math.floor(click*(0.15+Math.random()*0.2));
+      const reg = Math.floor(down*(0.4+Math.random()*0.3));
+      const pay = Math.floor(reg*(0.03+Math.random()*0.05));
+      const rev = pay * (Math.floor(Math.random()*200)+50);
+      const roi = (rev/(down*8)*100).toFixed(1);
+      data.push([dates[d],ch,show.toLocaleString(),click.toLocaleString(),ctr,down.toLocaleString(),reg.toLocaleString(),pay.toLocaleString(),rev.toLocaleString(),roi+'%']);
+      totalShow+=show;totalClick+=click;totalDown+=down;totalReg+=reg;totalPay+=pay;totalRev+=rev;
+    }
+  }
+  const totalCtr = (totalClick/totalShow*100).toFixed(2)+'%';
+  const totalRoi = (totalRev/(totalDown*8)*100).toFixed(1);
+  data.push(['合计','',totalShow.toLocaleString(),totalClick.toLocaleString(),totalCtr,totalDown.toLocaleString(),totalReg.toLocaleString(),totalPay.toLocaleString(),totalRev.toLocaleString(),totalRoi+'%']);
+
+  let html = '<div class="work-data"><table><colgroup>';
+  [100,100,80,80,60,80,80,80,90,70].forEach(w => html += '<col style="width:'+w+'px">');
+  html += '</colgroup>';
+  data.forEach((row, ri) => {
+    html += '<tr>';
+    row.forEach((cell, ci) => {
+      let cls = '';
+      if (ri === 0) cls = 'header';
+      else if (ri === data.length-1) cls = 'total';
+      else if (ci === 0) cls = 'date';
+      else if (ci >= 2 && ci <= 8) cls = 'currency';
+      else if (ci === 9) cls = 'percent';
+      html += '<td class="'+cls+'">'+cell+'</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</table></div>';
+  return html;
+}
+
+function toggleWorkMode() {
+  workMode = !workMode;
+  render();
+}
+
+// ============================================
+// Sheet切换
+// ============================================
+function switchSheet(el, name) {
+  if (name === 'Sheet1') { workMode = false; }
+  else { workMode = true; }
+  render();
+}
+
+// ============================================
+// 右键菜单
+// ============================================
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const menu = document.getElementById('ctxMenu');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+});
+document.addEventListener('click', () => {
+  document.getElementById('ctxMenu').style.display = 'none';
+});
+function hideCtxMenu() { document.getElementById('ctxMenu').style.display = 'none'; }
+
+// ============================================
+// 文件菜单下拉
+// ============================================
+function toggleFileMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('fileDropdown');
+  const menuFile = document.getElementById('menuFile');
+  const isOpen = dd.style.display === 'block';
+  if (isOpen) {
+    dd.style.display = 'none';
+    menuFile.classList.remove('active');
+  } else {
+    const rect = menuFile.getBoundingClientRect();
+    dd.style.display = 'block';
+    dd.style.left = rect.left + 'px';
+    dd.style.top = rect.bottom + 'px';
+    menuFile.classList.add('active');
+  }
+}
+function hideFileMenu() {
+  document.getElementById('fileDropdown').style.display = 'none';
+  document.getElementById('menuFile').classList.remove('active');
+}
+
+document.getElementById('menuFile').addEventListener('click', toggleFileMenu);
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('fileDropdown');
+  const menuFile = document.getElementById('menuFile');
+  if (dd.style.display === 'block' && !dd.contains(e.target) && e.target !== menuFile) {
+    hideFileMenu();
+  }
+});
+
+// 兼容旧版：去掉localStorage中残留的" - Excel"后缀
+try {
+  const old = localStorage.getItem('moyu_cards_docname');
+  if (old && old.endsWith(' - Excel')) {
+    const clean = old.replace(/ - Excel$/, '');
+    localStorage.setItem('moyu_cards_docname', clean);
+  }
+} catch(e) {}
+
+// 初始化文档名称
+applyDocName(getDocName());
+
+// ============================================
+// 卡组编辑器
+// ============================================
+function openDeckBuilder() {
+  const saved = loadDeck();
+  dbSelections = saved?.selections ? JSON.parse(JSON.stringify(saved.selections)) : {};
+  dbHeroPower = saved?.heroPower || 'fireblast';
+  deckBuilderOpen = true;
+  render();
+}
+
+function closeDeckBuilder() {
+  deckBuilderOpen = false;
+  render();
+}
+
+// ============================================
+// 模式选择器（公平模式 vs 精英模式）
+// ============================================
+function openModeSelector() {
+  modeSelectorOpen = true;
+  render();
+}
+
+function closeModeSelector() {
+  modeSelectorOpen = false;
+  render();
+}
+
+function renderModeSelector() {
+  const area = document.getElementById('gameArea');
+  const currentMode = state?.gameMode || GAME_MODE.ELITE;
+  const picksPerSide = calcFairPicksPerSide();
+  const totalPool = picksPerSide * 2;
+  const cardCount = getMergedCardPool().length;
+
+  // 用 Excel 表格/工具栏 风格呈现
+  let html = '<div class="mode-selector" style="background:#fff;font-family:Calibri,\'Segoe UI\',sans-serif">';
+  // 顶部 Excel 工具栏（用现有样式）
+  html += '<div class="ms-toolbar" style="background:#f3f2f1;border-bottom:1px solid #d1d1d1;padding:6px 12px;display:flex;align-items:center;gap:8px">';
+  html += '<span style="font-weight:bold;color:#0f6e3d;font-size:13px">🎮 选择游戏模式</span>';
+  html += '<span style="color:#666;font-size:11px;margin-left:8px">|</span>';
+  html += '<span style="color:#666;font-size:11px">点击下方任一模式的"开始"按钮启动新对局</span>';
+  // 摸鱼模式开关（任何状态下都可用，全局一键切换）
+  html += '<button onclick="toggleWorkMode()" style="margin-left:auto;background:'+(workMode?'#ff9800':'#f0f0f0')+';color:'+(workMode?'#fff':'#333')+';border:1px solid '+(workMode?'#e68900':'#ccc')+';padding:4px 12px;cursor:pointer;font-size:12px;border-radius:3px;font-weight:bold">';
+  html += '🎣 摸鱼模式: '+(workMode?'开':'关')+'</button>';
+  html += '</div>';
+
+  // 模式对比表（Excel 风格 table）
+  html += '<table class="ms-table" style="border-collapse:collapse;width:100%;font-size:12px;margin-top:8px">';
+  // 表头
+  html += '<thead><tr>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:80px">模式</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:120px">名称</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:140px">卡组来源</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:120px">卡牌总量</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:160px">英雄技能</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:300px">机制说明</th>';
+  html += '<th style="background:#4472c4;color:#fff;padding:6px 10px;border:1px solid #d1d1d1;width:100px">操作</th>';
+  html += '</tr></thead><tbody>';
+
+  // 公平模式行
+  const isFair = currentMode === GAME_MODE.FAIR;
+  html += '<tr style="background:'+(isFair?'#fff3e0':'#fff')+';cursor:pointer" onmouseover="this.style.background=\'#e8f0e8\'" onmouseout="this.style.background=\''+(isFair?'#fff3e0':'#fff')+'\'">';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center;font-weight:bold;color:#1565c0">⚖ 公平</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">公平模式<span style="background:#ff9800;color:#fff;padding:1px 5px;font-size:10px;border-radius:2px;margin-left:6px">NEW</span></td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">公共卡池抽牌</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center">每方约 '+picksPerSide+' 张<br><span style="color:#888;font-size:10px">（池共 '+totalPool+' 张）</span></td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">双方独立随机（可相同）</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;font-size:11px;line-height:1.5">公共池由 '+cardCount+' 张卡牌按配额展开（1-2费每种 2 张，3+费每种 1 张），洗牌后双方轮流抽。一方抽到某张牌后，池中就少一张，对手牌库天然不会重叠。</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center"><button class="ms-start-btn" style="background:#0f6e3d;color:#fff;border:1px solid #0a5a32;padding:5px 14px;cursor:pointer;font-size:12px;border-radius:3px" onclick="selectGameMode(\''+GAME_MODE.FAIR+'\')">▶ 开始</button></td>';
+  html += '</tr>';
+
+  // 精英模式行
+  const isElite = currentMode === GAME_MODE.ELITE;
+  html += '<tr style="background:'+(isElite?'#fff3e0':'#fff')+';cursor:pointer" onmouseover="this.style.background=\'#e8f0e8\'" onmouseout="this.style.background=\''+(isElite?'#fff3e0':'#fff')+'\'">';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center;font-weight:bold;color:#6a1b9a">👑 精英</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">精英模式</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">玩家自选 + 对手随机</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center">双方各 20 张<br><span style="color:#888;font-size:10px">（自定义组牌）</span></td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">玩家可预设，对手随机</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;font-size:11px;line-height:1.5">通过卡组编辑器（B键）自定义 20 张牌+英雄技能。对手是随机牌组+随机技能。考验组牌构筑能力，策略深度最高。</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center"><button class="ms-start-btn" style="background:#0f6e3d;color:#fff;border:1px solid #0a5a32;padding:5px 14px;cursor:pointer;font-size:12px;border-radius:3px" onclick="selectGameMode(\''+GAME_MODE.ELITE+'\')">▶ 开始</button></td>';
+  html += '</tr>';
+
+  // 联机对战行
+  html += '<tr style="background:#fff;cursor:pointer" onmouseover="this.style.background=\'#e8f0e8\'" onmouseout="this.style.background=\'#fff\'">';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center;font-weight:bold;color:#e65100">🌐 联机</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">联机对战<span style="background:#e65100;color:#fff;padding:1px 5px;font-size:10px;border-radius:2px;margin-left:6px">NEW</span></td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">公平模式卡池 + 真人对战</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center">每方约 30 张<br><span style="color:#888;font-size:10px">（公共池互斥）</span></td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1">双方独立随机（可相同）</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;font-size:11px;line-height:1.5">创建房间生成4位码发给朋友，或输入码加入房间。公平模式卡池，真人对战，支持隐蔽聊天。</td>';
+  html += '<td style="padding:8px;border:1px solid #d1d1d1;text-align:center"><button class="ms-start-btn" style="background:#e65100;color:#fff;border:1px solid #bf3d00;padding:5px 14px;cursor:pointer;font-size:12px;border-radius:3px" onclick="openOnlineLobby()">▶ 进入大厅</button></td>';
+  html += '</tr>';
+
+  html += '</tbody></table>';
+
+  // 底部状态栏（Excel 风格）
+  html += '<div class="ms-status" style="background:#0f6e3d;color:#fff;padding:6px 12px;margin-top:12px;display:flex;align-items:center;gap:16px;font-size:11px">';
+  if (state) {
+    const modeLabel = currentMode === GAME_MODE.FAIR ? '⚖ 公平模式' : currentMode === GAME_MODE.ONLINE ? '🌐 联机对战' : '👑 精英模式';
+    html += '<span>当前模式: <b>'+modeLabel+'</b></span>';
+    html += '<span style="opacity:0.7">|</span>';
+    html += '<span>切换模式会开始新对局</span>';
+  } else {
+    html += '<span>首次启动，请选择一种模式</span>';
+    html += '<span style="opacity:0.7">|</span>';
+    html += '<span>可随时按 <kbd style="background:rgba(255,255,255,.2);padding:1px 5px;border-radius:2px">M</kbd> 打开此页面</span>';
+  }
+  html += '<span style="margin-left:auto;cursor:pointer" onclick="closeModeSelector()">✕ 关闭 (Esc)</span>';
+  html += '</div>';
+
+  html += '</div>';
+  area.innerHTML = html;
+  document.getElementById('titleDoc').textContent = '选择游戏模式';
+  document.getElementById('nameBox').value = 'A1';
+  document.getElementById('formulaInput').value = '=MODE_SELECTOR()';
+  updateStatus();
+}
+
+function selectGameMode(mode) {
+  if (state && state.gameOver === false && state.turn > 1) {
+    if (!confirm('当前对局尚未结束，切换模式将开始新对局。确定吗？')) return;
+  }
+  if (mode === GAME_MODE.FAIR) {
+    // 公平模式：游戏直接开始，公共池洗牌后双方轮流抽
+    state = null;  // 强制 initGame 走公平模式分支
+    initGame('fair');
+    closeModeSelector();
+    showToast('⚖ 公平模式已开始（公共卡池）');
+  } else if (mode === GAME_MODE.ELITE) {
+    state = null;
+    initGame('elite');
+    closeModeSelector();
+    showToast('👑 精英模式已开始');
+  }
+}
+
+// ============================================
+// 公平模式：公共卡池辅助函数
+// ============================================
+
+// 计算公平模式公共池：1-2费每种2张，3+费每种1张
+function buildFairPool() {
+  const merged = getMergedCardPool();
+  return merged.map((c, originalIdx) => {
+    const quota = (c.cost <= 2) ? 2 : 1;
+    return { card: c, originalIdx, quota, remaining: quota };
+  });
+}
+
+// 公共池配额总和（用于统计信息展示）
+function calcFairPicksPerSide() {
+  const pool = buildFairPool();
+  const totalQuotas = pool.reduce((s, x) => s + x.quota, 0);
+  return Math.ceil(totalQuotas / 2);
+}
+
+// ============================================
+// 玩法说明
+// ============================================
+function toggleHelp() {
+  helpOpen = !helpOpen;
+  render();
+}
+
+// ============================================
+// 卡牌设计器（自由创建/编辑/管理卡牌）
+// ============================================
+let designerOpen = false;
+let designerSelected = -1;  // -1表示未选中（新建态）
+let designerDraft = null;
+let designerFilter = '';
+
+const KW_OPTIONS = [
+  {id:'taunt', name:'嘲讽', desc:'敌方必须先打'},
+  {id:'charge', name:'冲锋', desc:'出场可攻击'},
+  {id:'divine_shield', name:'圣盾', desc:'抵挡一次伤害'},
+  {id:'deathrattle', name:'亡语', desc:'死亡时触发效果'},
+  {id:'windfury', name:'风怒', desc:'每回合攻击2次'},
+  {id:'enrage', name:'激怒', desc:'受伤时攻+3'},
+  {id:'battlecry', name:'战吼', desc:'出场立即触发'},
+];
+
+const EFFECT_TYPES = [
+  {v:'',                         l:'无效果（被动随从）'},
+  {v:'damage',                    l:'造成伤害（直伤）'},
+  {v:'damage_enemy_hero',         l:'对敌方英雄造成伤害'},
+  {v:'aoe_damage',                l:'AOE伤害（敌方随从）'},
+  {v:'aoe_all',                   l:'AOE伤害（所有随从）'},
+  {v:'aoe_enemy',                 l:'AOE伤害（亡语专用）'},
+  {v:'random_damage',             l:'随机伤害'},
+  {v:'heal_hero',                 l:'治疗英雄'},
+  {v:'buff',                      l:'Buff友方随从'},
+  {v:'destroy',                   l:'消灭随从'},
+  {v:'polymorph',                 l:'变形'},
+  {v:'draw',                      l:'抽牌'},
+  {v:'summon',                    l:'召唤随从'},
+  {v:'summon_hero',               l:'召唤（英雄技能）'},
+  {v:'gain_armor',                l:'获得护甲'},
+  {v:'divine_nova',               l:'AOE+治疗组合'},
+];
+
+function newCardDraft() {
+  return {
+    name:'新卡牌',
+    cost:1, atk:1, hp:1, type:'minion',
+    abilities:[], text:'',
+    effect:{type:'', value:0, target:'', atk:0, hp:0, name:'', count:1},
+    _isNew: true,
+  };
+}
+
+function openCardDesigner() {
+  designerOpen = true;
+  designerSelected = -1;
+  designerDraft = newCardDraft();
+  document.getElementById('designerOverlay').style.display = 'flex';
+  renderDesigner();
+}
+
+function closeCardDesigner() {
+  designerOpen = false;
+  document.getElementById('designerOverlay').style.display = 'none';
+}
+
+function renderDesigner() {
+  const total = CARD_POOL.length + getCustomCards().length;
+  document.getElementById('dsTotal').textContent = total;
+  renderDesignerList();
+  renderDesignerForm();
+}
+
+function renderDesignerList() {
+  const list = document.getElementById('dsList');
+  const filter = (document.getElementById('dsSearch')?.value || '').toLowerCase();
+  const custom = getCustomCards();
+  const merged = [];
+  CARD_POOL.forEach((c,i) => merged.push({c, i, isCustom:false}));
+  custom.forEach((c,i) => merged.push({c, i:CARD_POOL.length+i, isCustom:true}));
+
+  const filtered = filter
+    ? merged.filter(x => x.c.name.toLowerCase().includes(filter) || (x.c.text||'').toLowerCase().includes(filter))
+    : merged;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">没有匹配的卡牌</div>';
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(x => {
+    const isSel = designerSelected === x.i;
+    const typeLabel = x.c.type === 'spell' ? '<span class="ci-type spell">法术</span>' : '<span class="ci-type">随从</span>';
+    const customTag = x.isCustom ? '<span class="ci-custom-tag">自定义</span>' : '';
+    html += '<div class="card-item '+ (x.isCustom?'custom ':'') + (isSel?'active':'') +'" onclick="designerSelect('+x.i+')">';
+    html += '<div class="ci-cost">'+x.c.cost+'</div>';
+    html += '<div class="ci-name">'+escapeHtml(x.c.name)+customTag+'</div>';
+    html += typeLabel;
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function designerSelect(idx) {
+  if (designerDraft && designerDraft._isNew === false && !confirm('放弃当前未保存的修改？')) return;
+  const pool = getMergedCardPool();
+  designerSelected = idx;
+  designerDraft = JSON.parse(JSON.stringify(pool[idx]));
+  designerDraft._isNew = false;
+  renderDesigner();
+}
+
+function designerNew() {
+  if (designerDraft && designerDraft._isNew === false && !confirm('放弃当前未保存的修改？')) return;
+  designerSelected = -1;
+  designerDraft = newCardDraft();
+  renderDesigner();
+}
+
+function designerDuplicate() {
+  if (designerSelected < 0) {
+    alert('请先在左侧选择一张卡牌');
+    return;
+  }
+  const pool = getMergedCardPool();
+  designerSelected = -1;
+  designerDraft = JSON.parse(JSON.stringify(pool[designerSelected]));
+  designerDraft._isNew = true;
+  designerDraft.name = designerDraft.name + ' 副本';
+  renderDesigner();
+}
+
+function renderDesignerForm() {
+  const form = document.getElementById('dsForm');
+  if (!designerDraft) { form.innerHTML = '<p style="color:#888">从左侧选择卡牌开始编辑，或点击"新建"</p>'; return; }
+  const d = designerDraft;
+
+  let html = '';
+  // 基础字段
+  html += '<div class="field"><label>卡牌名称 *</label><input type="text" id="dfName" value="'+escapeHtml(d.name)+'" oninput="designerField(\'name\', this.value)"></div>';
+  html += '<div class="field"><label>类型</label><select id="dfType" onchange="designerField(\'type\', this.value)">';
+  html += '<option value="minion"'+(d.type==='minion'?' selected':'')+'>随从</option>';
+  html += '<option value="spell"'+(d.type==='spell'?' selected':'')+'>法术</option>';
+  html += '</select></div>';
+  html += '<div class="field"><label>费用 (0-10)</label><input type="number" id="dfCost" min="0" max="10" value="'+d.cost+'" oninput="designerField(\'cost\', parseInt(this.value)||0)"></div>';
+  if (d.type === 'minion') {
+    html += '<div class="field"><label>攻击力</label><input type="number" id="dfAtk" min="0" max="20" value="'+d.atk+'" oninput="designerField(\'atk\', parseInt(this.value)||0)"></div>';
+    html += '<div class="field"><label>生命值</label><input type="number" id="dfHp" min="0" max="20" value="'+d.hp+'" oninput="designerField(\'hp\', parseInt(this.value)||0)"></div>';
+  } else {
+    html += '<div class="field"><label>&nbsp;</label><div class="hint">法术牌不设攻/命</div></div>';
+    html += '<div class="field"><label>&nbsp;</label><div class="hint">法术牌不设攻/命</div></div>';
+  }
+
+  // 关键词多选
+  html += '<div class="field full"><label>关键词（可多选）</label><div class="kw-grid">';
+  KW_OPTIONS.forEach(kw => {
+    const checked = d.abilities.includes(kw.id);
+    html += '<label class="kw-cell"><input type="checkbox" '+(checked?'checked':'')+' onchange="designerToggleKw(\''+kw.id+'\', this.checked)">'+kw.name+' <span style="color:#888;font-size:10px">'+kw.desc+'</span></label>';
+  });
+  html += '</div></div>';
+
+  // 效果说明
+  html += '<div class="field full"><label>效果说明（显示在卡牌上的文字）</label><textarea id="dfText" oninput="designerField(\'text\', this.value)">'+escapeHtml(d.text||'')+'</textarea></div>';
+
+  // 效果结构
+  if (!d.effect) d.effect = {type:'', value:0, target:'', atk:0, hp:0, name:'', count:1};
+  html += '<div class="field full"><label>效果触发结构（控制卡牌行为的引擎字段）</label><div class="effect-builder">';
+  html += '<div class="field"><label>效果类型</label><select id="dfEffType" onchange="designerEffectField(\'type\', this.value)">';
+  EFFECT_TYPES.forEach(e => { html += '<option value="'+e.v+'"'+(d.effect.type===e.v?' selected':'')+'>'+e.l+'</option>'; });
+  html += '</select></div>';
+  html += '<div class="field"><label>数值（伤害/治疗/抽牌数）</label><input type="number" id="dfEffVal" value="'+(d.effect.value||0)+'" oninput="designerEffectField(\'value\', parseInt(this.value)||0)"></div>';
+  html += '<div class="field"><label>目标类型</label><input type="text" id="dfEffTarget" value="'+escapeHtml(d.effect.target||'')+'" placeholder="any/enemy_hero/..." oninput="designerEffectField(\'target\', this.value)"></div>';
+  html += '<div class="field"><label>Buff攻击加值</label><input type="number" id="dfEffAtk" value="'+(d.effect.atk||0)+'" oninput="designerEffectField(\'atk\', parseInt(this.value)||0)"></div>';
+  html += '<div class="field"><label>Buff血量加值</label><input type="number" id="dfEffHp" value="'+(d.effect.hp||0)+'" oninput="designerEffectField(\'hp\', parseInt(this.value)||0)"></div>';
+  html += '<div class="field"><label>召唤名称</label><input type="text" id="dfEffName" value="'+escapeHtml(d.effect.name||'')+'" oninput="designerEffectField(\'name\', this.value)"></div>';
+  html += '<div class="field"><label>召唤数量</label><input type="number" id="dfEffCount" min="1" max="5" value="'+(d.effect.count||1)+'" oninput="designerEffectField(\'count\', parseInt(this.value)||1)"></div>';
+  html += '</div><div class="hint">提示：不是所有字段都有用，按你选择的"效果类型"匹配填写即可。普通随从可留空。</div></div>';
+
+  // 实时预览
+  html += '<div class="designer-preview"><div class="pv-label">实时预览</div><div class="pv-card">';
+  html += '<div class="pv-name">'+escapeHtml(d.name||'未命名')+'</div>';
+  if (d.type === 'minion') {
+    html += '<div class="pv-stats"><span class="atk">⚔ '+d.atk+'</span><span class="hp">❤ '+d.hp+'</span><span style="color:#1a5c38">⛀ '+d.cost+'费</span></div>';
+  } else {
+    html += '<div class="pv-stats"><span style="color:#6a1b9a">✨ 法术</span><span style="color:#1a5c38">⛀ '+d.cost+'费</span></div>';
+  }
+  let tags = '';
+  d.abilities.forEach(a => { const kw = KW_OPTIONS.find(k=>k.id===a); if (kw) tags += '<span class="kw-tag kw-'+(a==='divine_shield'?'shield':a)+'">'+kw.name+'</span>'; });
+  if (tags) html += '<div class="pv-tags">'+tags+'</div>';
+  if (d.text) html += '<div class="pv-text">'+escapeHtml(d.text)+'</div>';
+  html += '</div></div>';
+
+  // 操作按钮
+  const isNew = designerSelected < 0;
+  html += '<div class="actions">';
+  html += '<button class="primary" onclick="designerSave()">'+(isNew?'保存为新卡牌':'保存修改')+'</button>';
+  if (!isNew && designerSelected >= CARD_POOL.length) {
+    html += '<button class="danger" onclick="designerDelete()">删除这张自定义卡牌</button>';
+  }
+  html += '<button onclick="designerNew()">清空/新建</button>';
+  html += '</div>';
+
+  form.innerHTML = html;
+}
+
+function designerField(key, val) {
+  designerDraft[key] = val;
+  renderDesignerForm();
+  renderDesignerList();
+}
+
+function designerToggleKw(id, checked) {
+  if (checked) {
+    if (!designerDraft.abilities.includes(id)) designerDraft.abilities.push(id);
+  } else {
+    designerDraft.abilities = designerDraft.abilities.filter(x => x !== id);
+  }
+  renderDesignerForm();
+  renderDesignerList();
+}
+
+function designerEffectField(key, val) {
+  if (!designerDraft.effect) designerDraft.effect = {};
+  designerDraft.effect[key] = val;
+  // 预览需要重绘
+  renderDesignerForm();
+}
+
+function designerSave() {
+  const d = designerDraft;
+  if (!d.name || !d.name.trim()) { alert('卡牌名称不能为空'); return; }
+  if (d.type === 'minion' && (d.atk == null || d.hp == null)) { alert('随从必须设置攻击和生命'); return; }
+  // 清理effect
+  const cleanEffect = d.effect && d.effect.type ? JSON.parse(JSON.stringify(d.effect)) : null;
+  const cleanCard = {
+    name: d.name.trim(),
+    cost: d.cost,
+    type: d.type,
+    abilities: [...(d.abilities||[])],
+    text: d.text||'',
+  };
+  if (d.type === 'minion') { cleanCard.atk = d.atk; cleanCard.hp = d.hp; }
+  if (cleanEffect) cleanCard.effect = cleanEffect;
+
+  const custom = getCustomCards();
+  if (designerSelected < 0) {
+    // 新建
+    custom.push(cleanCard);
+    designerSelected = CARD_POOL.length + custom.length - 1;
+  } else if (designerSelected >= CARD_POOL.length) {
+    // 编辑自定义
+    const idx = designerSelected - CARD_POOL.length;
+    custom[idx] = cleanCard;
+  } else {
+    // 编辑内置 - 复制为新自定义卡
+    if (!confirm('这是内置卡牌。修改后将以"新自定义卡牌"形式保存（不会影响原版）。继续？')) return;
+    custom.push({...cleanCard, name: cleanCard.name + ' (改)'});
+    designerSelected = CARD_POOL.length + custom.length - 1;
+  }
+  saveCustomCards(custom);
+  designerDraft._isNew = false;
+  showToast('已保存：' + cleanCard.name);
+  renderDesigner();
+}
+
+function designerDelete() {
+  if (designerSelected < CARD_POOL.length) { alert('内置卡牌不能删除'); return; }
+  if (!confirm('确定删除这张自定义卡牌？')) return;
+  const custom = getCustomCards();
+  const idx = designerSelected - CARD_POOL.length;
+  const name = custom[idx].name;
+  custom.splice(idx, 1);
+  saveCustomCards(custom);
+  designerSelected = -1;
+  designerDraft = newCardDraft();
+  showToast('已删除：' + name);
+  renderDesigner();
+}
+
+function designerReset() {
+  if (!confirm('删除所有自定义卡牌，恢复到出厂状态？此操作不可撤销！')) return;
+  localStorage.removeItem('moyu_cards_custom');
+  designerSelected = -1;
+  designerDraft = newCardDraft();
+  showToast('已重置');
+  renderDesigner();
+}
+
+function designerExport() {
+  const custom = getCustomCards();
+  const data = { version: 2, exportedAt: new Date().toISOString(), customCards: custom };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'moyu_cards_export_'+Date.now()+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('已导出 '+custom.length+' 张自定义卡牌');
+}
+
+function designerImport() {
+  document.getElementById('importFile').click();
+}
+
+function exportAllCards() {
+  designerExport();
+}
+
+function importCards() {
+  designerImport();
+}
+
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      let cards = [];
+      if (Array.isArray(data)) cards = data;
+      else if (data.customCards && Array.isArray(data.customCards)) cards = data.customCards;
+      else { alert('JSON格式错误，需要 customCards 数组'); return; }
+      // 验证
+      const valid = cards.filter(c => c.name && c.cost != null && c.type);
+      if (valid.length === 0) { alert('没有有效的卡牌'); return; }
+      if (!confirm('将导入 '+valid.length+' 张卡牌（会追加到现有自定义列表）。继续？')) return;
+      const custom = getCustomCards().concat(valid);
+      saveCustomCards(custom);
+      showToast('已导入 '+valid.length+' 张卡牌');
+      renderDesigner();
+    } catch(err) {
+      alert('JSON解析失败：'+err.message);
+    }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+
+// ============================================
+function getDocName() {
+  try {
+    const v = localStorage.getItem('moyu_cards_docname');
+    if (v) return v;
+  } catch(e) {}
+  return 'Book1';
+}
+
+function applyDocName(name) {
+  // 更新窗口内标题
+  const titleEl = document.getElementById('titleDoc');
+  if (titleEl) titleEl.textContent = name;
+  // 更新浏览器标签页标题（摸鱼关键）
+  document.title = name;
+  // 同步到localStorage
+  try { localStorage.setItem('moyu_cards_docname', name); } catch(e) {}
+}
+
+function openSaveAs() {
+  const current = getDocName();
+  document.getElementById('saveasOldName').textContent = current;
+  document.getElementById('saveasInput').value = current;
+  document.getElementById('saveasPreview').textContent = current;
+  document.getElementById('saveasOverlay').style.display = 'flex';
+  // 自动聚焦
+  setTimeout(() => {
+    const inp = document.getElementById('saveasInput');
+    inp.focus();
+    inp.select();
+  }, 50);
+}
+
+function closeSaveAs() {
+  document.getElementById('saveasOverlay').style.display = 'none';
+}
+
+function applyPreset(name) {
+  const inp = document.getElementById('saveasInput');
+  inp.value = name;
+  document.getElementById('saveasPreview').textContent = name;
+  inp.focus();
+}
+
+function confirmSaveAs() {
+  const v = document.getElementById('saveasInput').value.trim();
+  if (!v) { alert('文件名不能为空'); return; }
+  // 保留用户原始输入，不强制补全后缀
+  name = v;
+  applyDocName(name);
+  closeSaveAs();
+  showToast('已另存为：' + name);
+}
+
+function showToast(msg) {
+  let t = document.getElementById('gameToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'gameToast';
+    t.className = 'hint-toast';
+    t.style.opacity = '0';
+    t.style.display = 'none';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = '<div class="hint-title">✓ '+msg+'</div>';
+  t.style.opacity = '1';
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => {
+    t.style.opacity = '0';
+    setTimeout(() => { t.style.display = 'none'; }, 500);
+  }, 1800);
+}
+
+function renderHelp() {
+  const area = document.getElementById('gameArea');
+  let html = '<div class="help-page">';
+
+  // Header
+  html += '<div class="hp-header">';
+  html += '<span>操作手册 - 数据字典</span>';
+  html += '<span style="font-size:11px;opacity:.8">v2.0</span>';
+  html += '<span class="hp-close" onclick="toggleHelp()">&times; 关闭</span>';
+  html += '</div>';
+
+  // Section 1: 游戏概览
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">一、游戏概览</div>';
+  html += '<table><colgroup><col style="width:130px"><col></colgroup>';
+  html += '<tr><th>项目</th><th>说明</th></tr>';
+  const overview = [
+    ['游戏类型', '回合制卡牌对战（炉石传说风格，纯表格数值体现）'],
+    ['胜利条件', '将对手英雄HP降至0'],
+    ['初始HP', '双方各30点'],
+    ['初始牌库', '20张（从43张卡池中选取，可自定义或随机）'],
+    ['初始手牌', '先手3张，后手4张'],
+    ['法力系统', '1→10，每回合+1上限，每回合回满'],
+    ['手牌上限', '10张（满手不能再抽）'],
+    ['场上随从上限', '每方7个'],
+  ];
+  overview.forEach(r => {
+    html += '<tr><td class="hp-key">'+r[0]+'</td><td class="hp-val">'+r[1]+'</td></tr>';
+  });
+  html += '</table></div>';
+
+  // Section 2: 基本操作
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">二、基本操作</div>';
+  html += '<table><colgroup><col style="width:100px"><col style="width:120px"><col></colgroup>';
+  html += '<tr><th>操作</th><th>按键 / 方式</th><th>说明</th></tr>';
+  const ops = [
+    ['出牌', '<kbd>1</kbd>-<kbd>7</kbd> 或点击', '按对应数字键出牌，或直接点击手牌行'],
+    ['攻击', '点击随从 → 点击目标', '先选中己方随从（高亮），再点击敌方随从或英雄'],
+    ['英雄技能', '<kbd>H</kbd>', '每回合限用1次，消耗2点法力'],
+    ['结束回合', '<kbd>Enter</kbd>', '结束你的回合，AI开始行动'],
+    ['取消选择', '<kbd>ESC</kbd>', '取消当前选中或目标选择模式'],
+    ['重新开始', '<kbd>R</kbd>', '放弃当前对局，开始新一局'],
+    ['卡组编辑', '<kbd>B</kbd>', '打开卡组编辑器，自定义牌库'],
+    ['难度切换', '<kbd>D</kbd>', '循环切换 简单 → 普通 → 困难'],
+    ['玩法说明', '<kbd>?</kbd>', '打开 / 关闭本说明页面'],
+    ['老板键', '<kbd>`</kbd> (反引号)', '一键切换到工作模式（推广周报数据）'],
+  ];
+  ops.forEach(r => {
+    html += '<tr><td class="hp-key">'+r[0]+'</td><td style="text-align:center">'+r[1]+'</td><td class="hp-val">'+r[2]+'</td></tr>';
+  });
+  html += '</table></div>';
+
+  // Section 3: 关键词机制
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">三、关键词机制</div>';
+  html += '<table><colgroup><col style="width:80px"><col style="width:80px"><col></colgroup>';
+  html += '<tr><th>关键词</th><th>标签颜色</th><th>效果说明</th></tr>';
+  const keywords = [
+    ['嘲讽', '<span class="hp-kw kw-taunt">嘲讽</span>', '敌方必须优先攻击有嘲讽的随从，无法越过嘲讽攻击英雄或其他随从'],
+    ['冲锋', '<span class="hp-kw kw-charge">冲锋</span>', '随从召唤出场当回合即可攻击（无冲锋的随从需等到下回合）'],
+    ['圣盾', '<span class="hp-kw kw-shield">圣盾</span>', '抵消下一次受到的伤害（伤害归零后圣盾消失），可被AOE破除'],
+    ['亡语', '<span class="hp-kw kw-deathrattle">亡语</span>', '随从死亡时触发特殊效果（伤害、召唤、抽牌、治疗等）'],
+    ['风怒', '<span class="hp-kw kw-windfury">风怒</span>', '每回合可以攻击2次（而非普通的1次）'],
+    ['激怒', '<span class="hp-kw kw-enrage">激怒</span>', '随从受伤（HP未满）时攻击力+3，满血时恢复正常攻击力'],
+    ['战吼', '<span class="hp-kw" style="background:#c8e6c9;color:#1b5e20">战吼</span>', '随从出场时立即触发一次效果（不依赖死亡）'],
+  ];
+  keywords.forEach(r => {
+    html += '<tr><td class="hp-key" style="text-align:center">'+r[0]+'</td><td class="hp-color">'+r[1]+'</td><td class="hp-val">'+r[2]+'</td></tr>';
+  });
+  html += '</table>';
+  html += '<div class="hp-note">提示：一个随从可以同时拥有多个关键词。例如「银色指挥官」同时拥有圣盾+冲锋——出场即可攻击，且第一次受伤被圣盾抵消。</div>';
+  html += '</div>';
+
+  // Section 4: 英雄技能
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">四、英雄技能（4选1，每回合1次，2费）</div>';
+  html += '<table><colgroup><col style="width:100px"><col style="width:50px"><col style="width:80px"><col></colgroup>';
+  html += '<tr><th>技能名称</th><th>费用</th><th>需选目标</th><th>效果</th></tr>';
+  HERO_POWERS.forEach(hp => {
+    html += '<tr><td class="hp-key">'+hp.name+'</td><td style="text-align:center">'+hp.cost+'</td><td style="text-align:center">'+(hp.needTarget?'是':'否')+'</td><td class="hp-val">'+hp.text+'</td></tr>';
+  });
+  html += '</table>';
+  html += '<div class="hp-note">使用方式：按 <kbd>H</kbd> 激活英雄技能。如果技能需要选目标（如火焰冲击），会进入目标选择模式，点击合法目标后生效；无需目标的技能（如次级治疗）直接生效。每回合限用1次。</div>';
+  html += '</div>';
+
+  // Section 5: 法术类型
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">五、法术类型</div>';
+  html += '<table><colgroup><col style="width:100px"><col style="width:100px"><col style="width:60px"><col></colgroup>';
+  html += '<tr><th>类型</th><th>代表卡牌</th><th>费用</th><th>效果说明</th></tr>';
+  const spells = [
+    ['直伤（单体）', '火球术', '4', '对任意目标（英雄或随从）造成6点伤害，需选目标'],
+    ['AOE（敌方）', '暴风雪', '2', '对所有敌方随从造成2点伤害，不需选目标'],
+    ['AOE（全体）', '闪电风暴', '3', '对所有随从（含己方）造成2点伤害'],
+    ['随机伤害', '奥术飞弹', '1', '随机分配3点伤害到敌方目标（英雄+随从）'],
+    ['治疗', '治疗术', '1', '恢复己方英雄4点生命值'],
+    ['增益', '力量祝福', '1', '使一个友方随从获得+2攻击力/+2生命值，需选目标'],
+    ['变形', '变形术', '3', '将任意随从变成1/1（清除所有关键词和增益），需选目标'],
+    ['消灭', '斩杀', '2', '消灭一个受伤的敌方随从，需选目标'],
+    ['抽牌', '奥术智慧', '3', '从牌库抽2张牌到手牌'],
+    ['复合', '神圣新星', '5', '对所有敌方随从造成2点伤害 + 恢复己方英雄2点生命'],
+  ];
+  spells.forEach(r => {
+    html += '<tr><td class="hp-key">'+r[0]+'</td><td style="text-align:center">'+r[1]+'</td><td style="text-align:center">'+r[2]+'</td><td class="hp-val">'+r[3]+'</td></tr>';
+  });
+  html += '</table></div>';
+
+  // Section 6: AI难度
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">六、AI难度说明（按 <kbd>D</kbd> 切换）</div>';
+  html += '<table><colgroup><col style="width:70px"><col style="width:200px"><col></colgroup>';
+  html += '<tr><th>难度</th><th>出牌策略</th><th>攻击策略</th></tr>';
+  const aiLevels = [
+    ['简单', '随机出可负担的牌', '50%概率打脸，50%随机打随从'],
+    ['普通', '按费用从高到低出牌，法力效率优先', '有利交换优先（用小怪换大怪），否则打脸'],
+    ['困难', '费用全规划 + 斩杀线计算(含风怒/技能) + AOE时机 + 硬解高威胁', '全局攻击规划 + 有利交换 + 破圣盾 + 斩杀全打脸'],
+  ];
+  aiLevels.forEach(r => {
+    html += '<tr><td class="hp-key" style="text-align:center">'+r[0]+'</td><td class="hp-val">'+r[1]+'</td><td class="hp-val">'+r[2]+'</td></tr>';
+  });
+  html += '</table>';
+  html += '<div class="hp-note">建议新手从「普通」开始。困难模式AI会做费用全规划（枚举出牌组合含英雄技能）、计算完整斩杀线（含风怒双打+英雄技能）、全局攻击规划（最优交换分配），挑战性较高。</div>';
+  html += '</div>';
+
+  // Section 7: 游戏模式
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">七、游戏模式（按 <kbd>M</kbd> 切换）</div>';
+  html += '<table><colgroup><col style="width:90px"><col style="width:90px"><col></colgroup>';
+  html += '<tr><th>模式</th><th>卡组来源</th><th>英雄技能</th></tr>';
+  html += '<tr><td class="hp-key" style="text-align:center">⚖ 公平模式</td><td class="hp-val">双方从 <b>公共卡池</b> 轮流选牌<br>(1-2费每种2张，3+费每种1张)</td><td class="hp-val">双方 <b>独立随机</b>，可相同</td></tr>';
+  html += '<tr><td class="hp-key" style="text-align:center">👑 精英模式</td><td class="hp-val">你用卡组编辑器 <b>自定义</b>，对手随机</td><td class="hp-val">你 <b>可预设</b>，对手随机</td></tr>';
+  html += '</table>';
+  html += '<div class="hp-note"><b>公平模式</b>适合不想被"卡组运气"影响的玩家——每张牌双方都有机会选到，先手后手不会差太多。<b>精英模式</b>适合喜欢研究构筑的玩家，能体验完整的组牌和技能选择策略。</div>';
+  html += '</div>';
+
+  // Section 8: 卡组编辑器
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">八、卡组编辑器（按 <kbd>B</kbd> 打开，<b>仅精英模式</b>）</div>';
+  html += '<table><colgroup><col style="width:120px"><col></colgroup>';
+  html += '<tr><th>操作</th><th>说明</th></tr>';
+  const deckOps = [
+    ['选牌', '点击卡池表格最右侧"数量"列，每次点击 +1，每张卡最多选2张'],
+    ['英雄技能', '在顶部4个按钮中选择你的英雄技能（精英模式下生效）'],
+    ['随机填充', '一键随机选择20张卡牌（每张最多2张）'],
+    ['清空', '清空所有已选卡牌'],
+    ['保存并开始', '选满20张后点击保存，牌库和英雄技能存入localStorage，下次自动加载'],
+    ['取消', '放弃编辑，返回当前对局'],
+  ];
+  deckOps.forEach(r => {
+    html += '<tr><td class="hp-key">'+r[0]+'</td><td class="hp-val">'+r[1]+'</td></tr>';
+  });
+  html += '</table>';
+  html += '<div class="hp-note">建议：组牌时注意费用曲线——1-2费卡牌6-8张保证前期，3-4费8-10张中期稳定，5费以上4-6张作为终结手段。嘲讽和AOE法术适量携带。公平模式下卡组编辑器无效，请用 <kbd>M</kbd> 切换到精英模式。</div>';
+  html += '</div>';
+
+  // Section 9: 伪装与摸鱼技巧
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">九、伪装与摸鱼技巧</div>';
+  html += '<table><colgroup><col style="width:120px"><col></colgroup>';
+  html += '<tr><th>技巧</th><th>说明</th></tr>';
+  const tips = [
+    ['老板键', '按 <kbd>`</kbd>（反引号，Tab上方）瞬间切换到「推广周报数据」工作模式，再按回来继续'],
+    ['Sheet切换', '底部Sheet标签栏：Sheet1=游戏，Sheet2/Sheet3=工作模式，点击切换'],
+    ['右键菜单', '右键点击会弹出Excel标准菜单（复制/剪切/粘贴等），增加真实感'],
+    ['公式栏', '编辑栏动态显示公式：出牌时=VLOOKUP，选目标时=VLOOKUP(TARGET)，回合中=ROUND(MANA,TURN)'],
+    ['状态栏', '求和=双方HP总和，计数=场上随从数，平均值=回合数——数字变化自然'],
+    ['窗口位置', '建议游戏区放在屏幕中间偏下，不要全屏'],
+    ['难度建议', '普通难度节奏适中，困难模式思考时间长容易暴露'],
+    ['被问话术', '"在核对推广周报的ROI数据" / "在跑渠道投放的SUMIFS"'],
+  ];
+  tips.forEach(r => {
+    html += '<tr><td class="hp-key">'+r[0]+'</td><td class="hp-val">'+r[1]+'</td></tr>';
+  });
+  html += '</table></div>';
+
+  // Section 10: 卡牌池速查
+  html += '<div class="hp-section">';
+  html += '<div class="hp-title">十、卡牌池速查（共43张：33随从 + 10法术）</div>';
+  html += '<table><colgroup><col style="width:30px"><col style="width:110px"><col style="width:40px"><col style="width:40px"><col style="width:40px"><col style="width:120px"><col></colgroup>';
+  html += '<tr><th>#</th><th>名称</th><th>费用</th><th>攻</th><th>命</th><th>关键词</th><th>效果</th></tr>';
+  CARD_POOL.forEach((c, i) => {
+    html += '<tr>';
+    html += '<td style="text-align:center;color:#888">'+(i+1)+'</td>';
+    html += '<td style="font-weight:bold'+(c.type==='spell'?';color:#6a1b9a':'')+'">'+c.name+(c.type==='spell'?' [法]':'')+'</td>';
+    html += '<td style="text-align:center">'+c.cost+'</td>';
+    if (c.type === 'minion') {
+      html += '<td style="text-align:center">'+c.atk+'</td>';
+      html += '<td style="text-align:center">'+c.hp+'</td>';
+    } else {
+      html += '<td style="text-align:center;color:#aaa">-</td>';
+      html += '<td style="text-align:center;color:#aaa">-</td>';
+    }
+    // 关键词标签
+    let abilHtml = '';
+    if (c.abilities && c.abilities.length > 0) {
+      c.abilities.forEach(a => {
+        const kwMap = {taunt:['kw-taunt','嘲讽'],charge:['kw-charge','冲锋'],divine_shield:['kw-shield','圣盾'],deathrattle:['kw-deathrattle','亡语'],windfury:['kw-windfury','风怒'],enrage:['kw-enrage','激怒'],battlecry:['','战吼']};
+        const kw = kwMap[a];
+        if (kw) abilHtml += '<span class="hp-kw '+(kw[0]||'')+'" '+(a==='battlecry'?'style="background:#c8e6c9;color:#1b5e20"':'')+'>'+kw[1]+'</span>';
+      });
+    }
+    html += '<td>'+abilHtml+'</td>';
+    html += '<td style="font-size:11px;color:#666">'+(c.text||'')+'</td>';
+    html += '</tr>';
+  });
+  html += '</table></div>';
+
+  // Footer
+  html += '<div style="text-align:center;padding:12px;font-size:11px;color:#605e5c">';
+  html += '按 <kbd>?</kbd> 关闭说明返回游戏 &nbsp;|&nbsp; 按 <kbd>`</kbd> 切换工作模式';
+  html += '</div>';
+
+  html += '</div>';
+  area.innerHTML = html;
+  document.getElementById('titleDoc').textContent = '操作手册';
+  document.getElementById('nameBox').value = 'A1';
+  document.getElementById('formulaInput').value = '=HELP(OPERATION_MANUAL)';
+  updateStatus();
+}
+
+function dbToggleCard(index) {
+  const current = dbSelections[index] || 0;
+  const total = Object.values(dbSelections).reduce((a,b)=>a+b, 0);
+  if (current >= 2) {
+    delete dbSelections[index];
+  } else if (total >= 20) {
+    return;
+  } else {
+    dbSelections[index] = current + 1;
+  }
+  render();
+}
+
+function dbSetHero(id) {
+  dbHeroPower = id;
+  render();
+}
+
+function dbRandomFill() {
+  const pool = getMergedCardPool();
+  dbSelections = {};
+  let count = 0;
+  let guard = 0;
+  while (count < 20 && guard < 1000) {
+    const idx = Math.floor(Math.random() * pool.length);
+    if ((dbSelections[idx] || 0) < 2) {
+      dbSelections[idx] = (dbSelections[idx] || 0) + 1;
+      count++;
+    }
+    guard++;
+  }
+  render();
+}
+
+function dbClear() {
+  dbSelections = {};
+  render();
+}
+
+function dbSave() {
+  const total = Object.values(dbSelections).reduce((a,b)=>a+b, 0);
+  if (total !== 20) return;
+  saveDeck(dbSelections, dbHeroPower);
+  deckBuilderOpen = false;
+  initGame();
+  render();
+}
+
+function renderDeckBuilder() {
+  const area = document.getElementById('gameArea');
+  const total = Object.values(dbSelections).reduce((a,b)=>a+b, 0);
+  let html = '<div class="deck-builder">';
+  html += '<div class="db-header">-- 卡组编辑器 -- （共'+total+'/20张）</div>';
+
+  // 英雄技能选择（精英模式可预设）
+  const isElite = state?.gameMode === GAME_MODE.ELITE || !state?.gameMode;
+  const hp = dbHeroPower ? HERO_POWERS.find(x => x.id === dbHeroPower) : null;
+  html += '<div class="db-hero-select"><span style="font-size:12px;font-weight:bold;margin-right:8px">英雄技能: </span>';
+  if (isElite) {
+    // 精英模式：让用户选
+    HERO_POWERS.forEach(p => {
+      const sel = dbHeroPower === p.id ? 'selected' : '';
+      html += '<div class="db-hero-btn '+sel+'" onclick="dbSetHero(\''+p.id+'\')" title="'+p.text+'">'+p.name+'</div>';
+    });
+    if (hp) html += '<span style="margin-left:12px;color:#888;font-size:11px">（已选：'+hp.name+' - '+hp.text+'）</span>';
+    html += '<div style="font-size:10px;color:#888;margin-top:3px">※ 精英模式下，你的英雄技能固定为你选定的技能；对手技能每局随机</div>';
+  } else {
+    html += '<span style="color:#0078d4;font-weight:bold;background:#e8f4ff;padding:4px 10px;border-radius:3px">⚖ 当前是公平模式，技能每局独立随机</span>';
+    html += '<div style="font-size:10px;color:#888;margin-top:3px">※ 公平模式下，双方技能在每局开始时独立随机，技能可相同。如需预设技能请 <kbd>M</kbd> 切换到精英模式</div>';
+  }
+  html += '</div>';
+
+  // 卡池表格
+  html += '<table><thead><tr>';
+  html += '<th style="width:30px">编号</th><th style="width:110px">名称</th><th style="width:40px">费用</th><th style="width:40px">攻</th><th style="width:40px">命</th><th style="width:120px">关键词</th><th>效果说明</th><th style="width:50px">数量</th>';
+  html += '</tr></thead><tbody>';
+
+  const cardPool = getMergedCardPool();
+  cardPool.forEach((c, i) => {
+    const count = dbSelections[i] || 0;
+    const rowCls = count === 2 ? 'selected2' : count === 1 ? 'selected1' : '';
+    html += '<tr class="db-card-row '+rowCls+'">';
+    const isCustom = i >= CARD_POOL.length;
+    html += '<td style="text-align:center;color:#888">'+(i+1)+(isCustom?' ★':'')+'</td>';
+    html += '<td style="font-weight:bold'+(c.type==='spell'?';color:#6a1b9a':'')+'">'+c.name+(c.type==='spell'?' [法]':'')+'</td>';
+    html += '<td style="text-align:center">'+c.cost+'</td>';
+    if (c.type === 'minion') {
+      html += '<td style="text-align:center">'+c.atk+'</td>';
+      html += '<td style="text-align:center">'+c.hp+'</td>';
+    } else {
+      html += '<td style="text-align:center;color:#aaa">-</td>';
+      html += '<td style="text-align:center;color:#aaa">-</td>';
+    }
+    // 关键词标签
+    let abilHtml = '';
+    const tempM = {abilities: c.abilities||[], hp: 1, maxHp: 1};
+    abilHtml = renderAbilities(tempM);
+    html += '<td>'+abilHtml+'</td>';
+    html += '<td style="font-size:11px;color:#666">'+(c.text||'')+'</td>';
+    html += '<td class="db-count" onclick="dbToggleCard('+i+')">'+count+' / 2</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  // 底部按钮
+  html += '<div class="db-footer">';
+  html += '<button class="db-btn" onclick="dbRandomFill()">随机填充</button>';
+  html += '<button class="db-btn" onclick="dbClear()">清空</button>';
+  html += '<button class="db-btn primary" '+(total===20?'':'disabled')+' onclick="dbSave()">保存并开始</button>';
+  html += '<button class="db-btn" onclick="closeDeckBuilder()">取消</button>';
+  html += '<span class="db-status">当前: '+total+'/20张'+(total===20?' - 可以保存':' - 需要20张')+'</span>';
+  html += '</div>';
+
+  // 已选卡牌预览
+  html += '<div style="margin-top:8px;font-size:11px;color:#605e5c">';
+  html += '<strong>已选卡牌:</strong> ';
+  const selected = Object.entries(dbSelections).filter(([_,c])=>c>0).map(([i,c])=>CARD_POOL[parseInt(i)].name+'x'+c);
+  html += selected.length > 0 ? selected.join(', ') : '（空）';
+  html += '</div>';
+
+  html += '</div>';
+  area.innerHTML = html;
+  document.getElementById('titleDoc').textContent = '卡组编辑器';
+  document.getElementById('nameBox').value = 'A1';
+  document.getElementById('formulaInput').value = '=DATA_ENTRY(DECK_BUILDER)';
+  updateStatus();
+}
+
+// ============================================
+// 难度切换
+// ============================================
+function cycleDifficulty() {
+  if (!state) return;
+  const order = ['easy','normal','hard'];
+  const idx = order.indexOf(state.difficulty);
+  state.difficulty = order[(idx+1) % 3];
+  const names = {easy:'简单',normal:'普通',hard:'困难'};
+  log('难度切换为: '+names[state.difficulty]);
+  updateStatus();
+}
+
+// ============================================
+// 键盘控制
+// ============================================
+document.addEventListener('keydown', (e) => {
+  // 设计器打开时，除了Esc其他都放行（设计器内部输入需要工作）
+  if (designerOpen && e.key !== 'Escape') return;
+  // 另存为对话框打开时
+  if (document.getElementById('saveasOverlay').style.display === 'flex') {
+    if (e.key === 'Escape') { e.preventDefault(); closeSaveAs(); return; }
+    if (e.key === 'Enter') { e.preventDefault(); confirmSaveAs(); return; }
+    return;
+  }
+  // F12 = 另存为
+  if (e.key === 'F12') { e.preventDefault(); openSaveAs(); return; }
+  // Ctrl+S = 保存
+  if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    showToast('文档已保存: ' + getDocName());
+    return;
+  }
+  // Ctrl+E = 卡牌设计器
+  if (e.ctrlKey && (e.key === 'e' || e.key === 'E')) {
+    e.preventDefault();
+    if (designerOpen) closeCardDesigner();
+    else openCardDesigner();
+    return;
+  }
+  // 设计器打开时按 Esc 关闭
+  if (designerOpen && e.key === 'Escape') {
+    e.preventDefault(); closeCardDesigner(); return;
+  }
+  if (e.key === '`' || e.key === '~' || (e.ctrlKey && e.key === '`')) {
+    e.preventDefault(); toggleWorkMode(); return;
+  }
+  // 玩法说明 - 任何状态下都可以开关
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault(); toggleHelp(); return;
+  }
+  // 模式选择器（任何状态下）
+  if (e.key === 'm' || e.key === 'M') {
+    e.preventDefault();
+    if (modeSelectorOpen) closeModeSelector();
+    else openModeSelector();
+    return;
+  }
+  if (modeSelectorOpen) {
+    if (e.key === 'Escape') { e.preventDefault(); closeModeSelector(); }
+    return;
+  }
+  if (helpOpen) {
+    if (e.key === 'Escape') { e.preventDefault(); toggleHelp(); }
+    return;
+  }
+  if (deckBuilderOpen) {
+    if (e.key === 'Escape') { e.preventDefault(); closeDeckBuilder(); }
+    return;
+  }
+  if (workMode) return;
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    targetingMode = null; targetingSource = null; render(); return;
+  }
+  if (e.key === 'b' || e.key === 'B') { e.preventDefault(); openDeckBuilder(); return; }
+  if (e.key === 'd' || e.key === 'D') { e.preventDefault(); cycleDifficulty(); return; }
+  if (state?.gameOver) {
+    if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault();
+      if (onlineState.connected) { openOnlineLobby(); }
+      else { initGame(); render(); }
+    }
+    return;
+  }
+  if (aiThinking) return;
+  if (onlineState.connected && onlineState.waitingForSync) return;
+
+  if (e.key === 'Enter') { e.preventDefault(); endTurn(); return; }
+  if (e.key === 'r' || e.key === 'R') {
+    e.preventDefault();
+    if (onlineState.connected) { if (confirm('放弃当前对局返回大厅？')) { openOnlineLobby(); } }
+    else { initGame(); render(); }
+    return;
+  }
+  if (e.key === 'h' || e.key === 'H') { e.preventDefault(); tryUseHeroPower(); return; }
+
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 7) {
+    e.preventDefault();
+    tryPlayCard(num - 1);
+  }
+});
+
+// ============================================
+// 联机对战模块
+// ============================================
+function getWsUrl() {
+  if (location.protocol === 'file:') return 'ws://localhost:3000';
+  return (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+}
+
+function connectOnline() {
+  if (onlineState.ws) { onlineState.ws.close(); onlineState.ws = null; }
+  try {
+    onlineState.ws = new WebSocket(getWsUrl());
+  } catch(e) {
+    showToast('无法连接服务器');
+    return;
+  }
+  onlineState.ws.onopen = () => {
+    onlineState.connected = true;
+    if (onlineState._pendingJoin) {
+      onlineState.ws.send(JSON.stringify({ type: 'join', code: onlineState._pendingJoin }));
+      onlineState._pendingJoin = null;
+    }
+    renderOnlineLobby();
+  };
+  onlineState.ws.onclose = () => {
+    const wasConnected = onlineState.connected;
+    onlineState.connected = false;
+    if (wasConnected && onlineState.roomCode) {
+      showToast('连接已断开');
+      onlineState.roomCode = null;
+      onlineState.waitingForOpponent = false;
+      onlineState.lobbyOpen = true;
+      renderOnlineLobby();
+    } else if (!onlineState.connected) {
+      renderOnlineLobby();
+    }
+  };
+  onlineState.ws.onmessage = (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch { return; }
+    handleWsMessage(msg);
+  };
+}
+
+function handleWsMessage(msg) {
+  switch (msg.type) {
+    case 'created':
+      onlineState.isHost = true;
+      onlineState.roomCode = msg.code;
+      onlineState.waitingForOpponent = true;
+      renderOnlineLobby();
+      break;
+    case 'joined':
+      onlineState.isHost = false;
+      onlineState.roomCode = msg.code;
+      onlineState.waitingForOpponent = false;
+      renderOnlineLobby();
+      break;
+    case 'opponent_joined':
+      onlineState.waitingForOpponent = false;
+      startOnlineGame();
+      break;
+    case 'game_init':
+      applyGameInit(msg.state);
+      break;
+    case 'sync_state':
+      applySyncState(msg.state);
+      break;
+    case 'action':
+      handleRemoteAction(msg);
+      break;
+    case 'chat':
+      onlineState.chatMessages.push({side: 'opp', text: msg.message});
+      renderChatBar();
+      break;
+    case 'opponent_left':
+      if (!state?.gameOver) {
+        showToast('对手已离开，你赢了');
+        if (state) { state.gameOver = true; state.winner = 'player'; render(); }
+      }
+      break;
+    case 'concede':
+      if (state && !state.gameOver) {
+        showToast('对手认输了');
+        state.gameOver = true;
+        state.winner = 'player';
+        render();
+      }
+      break;
+    case 'error':
+      showToast(msg.msg);
+      break;
+  }
+}
+
+function createRoom() {
+  if (!onlineState.connected) { connectOnline(); return; }
+  onlineState.ws.send(JSON.stringify({ type: 'create' }));
+}
+
+function joinRoom(code) {
+  code = (code || '').toUpperCase().trim();
+  if (code.length !== 4) { showToast('请输入4位房间码'); return; }
+  if (!onlineState.connected) {
+    onlineState._pendingJoin = code;
+    connectOnline();
+    return;
+  }
+  onlineState.ws.send(JSON.stringify({ type: 'join', code: code }));
+}
+
+function startOnlineGame() {
+  initGame('fair');
+  state.gameMode = GAME_MODE.ONLINE;
+  const syncState = flipState(state);
+  onlineState.ws.send(JSON.stringify({ type: 'game_init', state: syncState }));
+  onlineState.lobbyOpen = false;
+  showToast('联机对战开始！你先手');
+  render();
+}
+
+function flipState(s) {
+  return {
+    player: JSON.parse(JSON.stringify(s.enemy)),
+    enemy: JSON.parse(JSON.stringify(s.player)),
+    turn: s.turn,
+    currentPlayer: s.currentPlayer === 'player' ? 'enemy' : 'player',
+    gameOver: s.gameOver,
+    winner: s.winner,
+    stats: s.stats,
+    difficulty: s.difficulty,
+    gameMode: GAME_MODE.ONLINE,
+    log: [...s.log],
+  };
+}
+
+function applyGameInit(syncState) {
+  state = syncState;
+  onlineState.lobbyOpen = false;
+  showToast('联机对战开始！对手先手');
+  render();
+}
+
+function sendSyncState() {
+  if (!onlineState.connected || !onlineState.isHost) return;
+  const syncState = flipState(state);
+  syncState.enemy.hand = syncState.enemy.hand.map(() =>
+    ({name:'隐藏卡牌', cost:0, type:'minion', abilities:[], text:''}));
+  onlineState.ws.send(JSON.stringify({ type: 'sync_state', state: syncState }));
+}
+
+function applySyncState(syncState) {
+  state = syncState;
+  onlineState.waitingForSync = false;
+  render();
+}
+
+function handleRemoteAction(msg) {
+  if (msg.action === 'play_card') {
+    let target = msg.target;
+    if (target) {
+      target = {...target};
+      target.player = target.player === 'player' ? 'enemy' : 'player';
+    }
+    playCard('enemy', msg.handIndex, target);
+    sendSyncState();
+  } else if (msg.action === 'attack') {
+    const tp = msg.targetPlayer === 'player' ? 'enemy' : 'player';
+    doAttack('enemy', msg.attackerUid, tp, msg.targetType, msg.targetUid);
+    sendSyncState();
+  } else if (msg.action === 'end_turn') {
+    endEnemyTurnOnline();
+    sendSyncState();
+  } else if (msg.action === 'hero_power') {
+    const target = msg.target ? {...msg.target} : null;
+    if (target) target.player = target.player === 'player' ? 'enemy' : 'player';
+    const power = HERO_POWERS.find(p => p.id === msg.powerId);
+    if (power) resolveHeroPower('enemy', power, target);
+    sendSyncState();
+  }
+}
+
+function endEnemyTurnOnline() {
+  aiThinking = false;
+  state.turn++;
+  startTurnOnline('player');
+}
+
+function startTurnOnline(p) {
+  const pl = state[p];
+  pl.maxMana = Math.min(pl.maxMana+1, 10);
+  pl.mana = pl.maxMana;
+  pl.powerUsed = false;
+  pl.board.forEach(m => {
+    m.justPlayed = false;
+    m.attacksLeft = m.abilities.includes('windfury') ? 2 : 1;
+  });
+  drawCard(p);
+  log('-- '+(p==='player'?'你的':'对手的')+'回合 (回合'+state.turn+') --');
+  state.currentPlayer = p;
+  render();
+}
+
+function onlineSendAction(action, data) {
+  if (!onlineState.connected || onlineState.isHost) return false;
+  onlineState.waitingForSync = true;
+  onlineState.ws.send(JSON.stringify({ type: 'action', action, ...data }));
+  return true;
+}
+
+function sendChat(text) {
+  if (!onlineState.connected || !text.trim()) return;
+  text = text.trim().slice(0, 100);
+  onlineState.chatMessages.push({side: 'me', text});
+  onlineState.ws.send(JSON.stringify({ type: 'chat', message: text }));
+  renderChatBar();
+}
+
+function disconnectOnline() {
+  if (onlineState.ws) {
+    try { onlineState.ws.send(JSON.stringify({ type: 'leave' })); } catch {}
+    onlineState.ws.close();
+  }
+  onlineState.connected = false;
+  onlineState.ws = null;
+  onlineState.roomCode = null;
+  onlineState.isHost = false;
+  onlineState.waitingForOpponent = false;
+  onlineState.waitingForSync = false;
+}
+
+function concedeOnline() {
+  if (!onlineState.connected || !state || state.gameOver) return;
+  if (!confirm('确定认输吗？')) return;
+  onlineState.ws.send(JSON.stringify({ type: 'concede' }));
+  state.gameOver = true;
+  state.winner = 'enemy';
+  render();
+}
+
+function renderOnlineLobby() {
+  const area = document.getElementById('gameArea');
+  let html = '<div class="mode-selector" style="background:#fff;font-family:Calibri,\'Segoe UI\',sans-serif">';
+  html += '<div class="ms-toolbar" style="background:#f3f2f1;border-bottom:1px solid #d1d1d1;padding:6px 12px;display:flex;align-items:center;gap:8px">';
+  html += '<span style="font-weight:bold;color:#0f6e3d;font-size:13px">🎮 联机对战大厅</span>';
+  html += '<button onclick="toggleWorkMode()" style="margin-left:auto;background:'+(workMode?'#ff9800':'#f0f0f0')+';color:'+(workMode?'#fff':'#333')+';border:1px solid '+(workMode?'#e68900':'#ccc')+';padding:4px 12px;cursor:pointer;font-size:12px;border-radius:3px;font-weight:bold">🎣 摸鱼模式: '+(workMode?'开':'关')+'</button>';
+  html += '</div>';
+
+  html += '<div style="padding:30px 40px">';
+
+  if (!onlineState.connected) {
+    html += '<div style="text-align:center;padding:40px">';
+    html += '<p style="font-size:14px;color:#666;margin-bottom:20px">点击下方按钮连接服务器</p>';
+    html += '<button onclick="connectOnline()" style="background:#0f6e3d;color:#fff;border:none;padding:10px 30px;font-size:14px;cursor:pointer;border-radius:4px">🔗 连接服务器</button>';
+    html += '</div>';
+  } else if (onlineState.waitingForOpponent && onlineState.roomCode) {
+    html += '<div style="text-align:center;padding:40px">';
+    html += '<p style="font-size:14px;color:#666;margin-bottom:10px">房间已创建，等待对手加入...</p>';
+    html += '<div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#0f6e3d;margin:20px 0;background:#f0f7f0;padding:15px 30px;display:inline-block;border-radius:8px;border:2px dashed #0f6e3d">';
+    html += onlineState.roomCode + '</div>';
+    html += '<p style="font-size:12px;color:#999;margin-top:10px">将此房间码发给对方，对方输入后即可开始对战</p>';
+    html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">取消</button>';
+    html += '</div>';
+  } else if (onlineState.connected && !onlineState.roomCode) {
+    html += '<table style="border-collapse:collapse;width:100%;max-width:600px;margin:0 auto;font-size:13px"><tr>';
+    html += '<td style="padding:20px;vertical-align:top;width:50%">';
+    html += '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:20px;text-align:center">';
+    html += '<h3 style="margin:0 0 10px;font-size:14px;color:#1565c0">创建房间</h3>';
+    html += '<p style="font-size:12px;color:#666;margin:0 0 15px">生成4位房间码，发给朋友</p>';
+    html += '<button onclick="createRoom()" style="background:#1565c0;color:#fff;border:none;padding:8px 24px;font-size:13px;cursor:pointer;border-radius:4px">创建房间</button>';
+    html += '</div></td>';
+    html += '<td style="padding:20px;vertical-align:top;width:50%">';
+    html += '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:20px;text-align:center">';
+    html += '<h3 style="margin:0 0 10px;font-size:14px;color:#6a1b9a">加入房间</h3>';
+    html += '<p style="font-size:12px;color:#666;margin:0 0 15px">输入朋友发来的房间码</p>';
+    html += '<input id="joinCodeInput" maxlength="4" placeholder="ABCD" style="text-transform:uppercase;text-align:center;font-size:18px;letter-spacing:4px;padding:6px 10px;width:120px;border:2px solid #ccc;border-radius:4px;margin-bottom:10px" onkeyup="this.value=this.value.toUpperCase()">';
+    html += '<br><button onclick="joinRoom(document.getElementById(\'joinCodeInput\').value)" style="background:#6a1b9a;color:#fff;border:none;padding:8px 24px;font-size:13px;cursor:pointer;border-radius:4px">加入房间</button>';
+    html += '</div></td></tr></table>';
+  } else if (onlineState.roomCode && !onlineState.isHost) {
+    html += '<div style="text-align:center;padding:40px">';
+    html += '<p style="font-size:14px;color:#666">已加入房间 '+onlineState.roomCode+'，等待主机开始游戏...</p>';
+    html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">离开</button>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  html += '<div class="ms-status" style="background:#0f6e3d;color:#fff;padding:6px 12px;margin-top:12px;display:flex;align-items:center;gap:16px;font-size:11px">';
+  html += '<span>连接状态: '+(onlineState.connected?'✅ 已连接':'❌ 未连接')+'</span>';
+  html += '<span style="margin-left:auto;cursor:pointer" onclick="closeOnlineLobby()">✕ 关闭 (Esc)</span>';
+  html += '</div>';
+  html += '</div>';
+  area.innerHTML = html;
+  document.getElementById('titleDoc').textContent = '联机大厅';
+  document.getElementById('nameBox').value = 'A1';
+  document.getElementById('formulaInput').value = '=ONLINE_LOBBY()';
+  updateStatus();
+}
+
+function closeOnlineLobby() {
+  if (onlineState.connected && onlineState.roomCode) {
+    if (!confirm('确定要断开联机连接吗？')) return;
+    disconnectOnline();
+  }
+  onlineState.lobbyOpen = false;
+  modeSelectorOpen = true;
+  render();
+}
+
+function openOnlineLobby() {
+  modeSelectorOpen = false;
+  onlineState.lobbyOpen = true;
+  if (!onlineState.connected) {
+    connectOnline();
+  } else {
+    renderOnlineLobby();
+  }
+}
+
+function renderChatBar() {
+  const chatEl = document.getElementById('chatBar');
+  if (!chatEl) return;
+  if (!onlineState.connected || !state || state.gameMode !== GAME_MODE.ONLINE) {
+    chatEl.style.display = 'none';
+    return;
+  }
+  chatEl.style.display = 'flex';
+  let html = '';
+  const recent = onlineState.chatMessages.slice(-3);
+  recent.forEach(m => {
+    const prefix = m.side === 'me' ? '我' : '对手';
+    const color = m.side === 'me' ? '#1565c0' : '#e65100';
+    html += '<span style="color:'+color+';font-size:11px;margin-right:12px;white-space:nowrap">'+prefix+': '+escapeHtml(m.text)+'</span>';
+  });
+  chatEl.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================
+// 启动
+// ============================================
+// 首次启动：先展示一个空的"主菜单"（实际上是模式选择器）
+// 这样做的好处是：避免用户被对局界面吓到，可以先选模式
+state = {
+  player: {hp:30,armor:0,mana:0,maxMana:0,deck:[],hand:[],board:[],fatigue:0,heroPower:'fireblast',powerUsed:false},
+  enemy:  {hp:30,armor:0,mana:0,maxMana:0,deck:[],hand:[],board:[],fatigue:0,heroPower:'fireblast',powerUsed:false},
+  turn: 1, currentPlayer: 'player', log: [], gameOver: false, winner: null,
+  stats: {damageDealt:0, minionsPlayed:0, spellsCast:0},
+  difficulty: 'normal',
+  gameMode: null,  // 首次启动未选模式
+};
+modeSelectorOpen = true;
+render();
+</script>
+</body>
+</html>
