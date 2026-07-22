@@ -394,7 +394,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
   <div class="ctx-sep"></div>
   <div class="ctx-item" onclick="toggleHelp();hideFileMenu()">选项... <span class="ctx-shortcut\">?</span></div>
   <div class="ctx-item" onclick="openModeSelector();hideFileMenu()">选择游戏模式... <span class="ctx-shortcut">M</span></div>
-  <div class="ctx-item" onclick="toggleWorkMode();hideFileMenu()"><span id="fileMenuWorkMode">摸鱼模式</span> <span class="ctx-shortcut">`</span></div>
   <div class="ctx-sep"></div>
   <div class="ctx-item" onclick="openDeckBuilder();hideFileMenu()">卡组编辑器... <span class="ctx-shortcut">B</span></div>
   <div class="ctx-item" onclick="openCardDesigner();hideFileMenu()">卡牌设计器... <span class="ctx-shortcut">Ctrl+E</span></div>
@@ -405,7 +404,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
   <div class="ctx-item" onclick="hideFileMenu()">关闭工作簿</div>
 </div>
 
-<!-- ===== 工具栏（去掉重复的tabs，只留工具按钮 + 摸鱼按钮） ===== -->
+<!-- ===== 工具栏（去掉重复的tabs） ===== -->
 <div class="ribbon">
   <div class="ribbon-content">
     <div class="ribbon-group">
@@ -458,16 +457,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
         <div class="rbtn"><span class="icon">&#8722;</span><span class="label">删除</span></div>
       </div>
       <div class="group-label">单元格</div>
-    </div>
-    <!-- 摸鱼模式按钮（醒目，一键切换工作伪装） -->
-    <div class="ribbon-group" style="border-right:none">
-      <div class="group-content">
-        <div class="rbtn" id="ribbonMoyuBtn" onclick="toggleWorkMode()" style="padding:4px 10px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:4px" title="按 ` 键也可切换">
-          <span class="icon">&#127793;</span>
-          <span class="label">摸鱼模式</span>
-        </div>
-      </div>
-      <div class="group-label" id="ribbonMoyuLabel">已关闭</div>
     </div>
   </div>
 </div>
@@ -581,7 +570,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
           <input type="text" id="saveasInput" maxlength="40" placeholder="例如：Q3销售数据汇总">
         </div>
         <div class="saveas-presets">
-          <div class="saveas-presets-label">常用摸鱼伪装模板（点击套用）：</div>
+          <div class="saveas-presets-label">常用工作模板（点击套用）：</div>
           <div class="saveas-preset-row">
             <div class="saveas-preset-btn" onclick="applyPreset('Q3销售数据汇总表.xlsx')">销售数据</div>
             <div class="saveas-preset-btn" onclick="applyPreset('2026年度预算编制表')">年度预算</div>
@@ -2025,16 +2014,11 @@ function log(msg) { state.log.push(msg); if (state.log.length > 8) state.log.shi
 // ============================================
 function render() {
   const area = document.getElementById('gameArea');
-  // 同步工具栏上"摸鱼模式"按钮的视觉状态
-  updateMoyuButton();
-  // 同步菜单栏"文件"下拉里的"摸鱼模式"标签
-  const fwml = document.getElementById('fileMenuWorkMode');
-  if (fwml) fwml.textContent = workMode ? '退出摸鱼模式' : '摸鱼模式';
   // Sheet标签同步
   const tabs = document.querySelectorAll('.sheet-tab');
   tabs.forEach(t => t.classList.remove('active'));
   if (tabs.length > 0) { tabs[workMode ? 1 : 0].classList.add('active'); }
-  // 摸鱼模式最高优先级（老板键随时生效，不受任何界面状态影响）
+  // workMode最高优先级（老板键随时生效，不受任何界面状态影响）
   if (workMode) {
     area.innerHTML = renderWorkData();
     document.getElementById('titleDoc').textContent = '周报数据';
@@ -2360,30 +2344,7 @@ function renderWorkData() {
 
 function toggleWorkMode() {
   workMode = !workMode;
-  updateMoyuButton();
   render();
-}
-
-// 同步工具栏上"摸鱼模式"按钮的视觉状态
-function updateMoyuButton() {
-  const btn = document.getElementById('ribbonMoyuBtn');
-  const lbl = document.getElementById('ribbonMoyuLabel');
-  if (!btn || !lbl) return;
-  if (workMode) {
-    btn.style.background = '#ff9800';
-    btn.style.color = '#fff';
-    btn.style.borderColor = '#e68900';
-    lbl.textContent = '已开启 · 老板键 \u0060';
-    lbl.style.color = '#e68900';
-    lbl.style.fontWeight = 'bold';
-  } else {
-    btn.style.background = '#f0f0f0';
-    btn.style.color = '#333';
-    btn.style.borderColor = '#bbb';
-    lbl.textContent = '已关闭';
-    lbl.style.color = '#605e5c';
-    lbl.style.fontWeight = 'normal';
-  }
 }
 
 // ============================================
@@ -2498,9 +2459,6 @@ function renderModeSelector() {
   html += '<span style="font-weight:bold;color:#0f6e3d;font-size:13px">🎮 选择游戏模式</span>';
   html += '<span style="color:#666;font-size:11px;margin-left:8px">|</span>';
   html += '<span style="color:#666;font-size:11px">点击下方任一模式的"开始"按钮启动新对局</span>';
-  // 摸鱼模式开关（任何状态下都可用，全局一键切换）
-  html += '<button onclick="toggleWorkMode()" style="margin-left:auto;background:'+(workMode?'#ff9800':'#f0f0f0')+';color:'+(workMode?'#fff':'#333')+';border:1px solid '+(workMode?'#e68900':'#ccc')+';padding:4px 12px;cursor:pointer;font-size:12px;border-radius:3px;font-weight:bold">';
-  html += '🎣 摸鱼模式: '+(workMode?'开':'关')+'</button>';
   html += '</div>';
 
   // 模式对比表（Excel 风格 table）
@@ -2973,7 +2931,7 @@ function applyDocName(name) {
   // 更新窗口内标题
   const titleEl = document.getElementById('titleDoc');
   if (titleEl) titleEl.textContent = name;
-  // 更新浏览器标签页标题（摸鱼关键）
+  // 更新浏览器标签页标题（伪装关键）
   document.title = name;
   // 同步到localStorage
   try { localStorage.setItem('moyu_cards_docname', name); } catch(e) {}
@@ -3190,9 +3148,9 @@ function renderHelp() {
   html += '<div class="hp-note">建议：组牌时注意费用曲线——1-2费卡牌6-8张保证前期，3-4费8-10张中期稳定，5费以上4-6张作为终结手段。嘲讽和AOE法术适量携带。公平模式下卡组编辑器无效，请用 <kbd>M</kbd> 切换到精英模式。</div>';
   html += '</div>';
 
-  // Section 9: 伪装与摸鱼技巧
+  // Section 9: 伪装技巧
   html += '<div class="hp-section">';
-  html += '<div class="hp-title">九、伪装与摸鱼技巧</div>';
+  html += '<div class="hp-title">九、伪装技巧</div>';
   html += '<table><colgroup><col style="width:120px"><col></colgroup>';
   html += '<tr><th>技巧</th><th>说明</th></tr>';
   const tips = [
@@ -3823,7 +3781,6 @@ function renderOnlineLobby() {
   let html = '<div class="mode-selector" style="background:#fff;font-family:Calibri,\'Segoe UI\',sans-serif">';
   html += '<div class="ms-toolbar" style="background:#f3f2f1;border-bottom:1px solid #d1d1d1;padding:6px 12px;display:flex;align-items:center;gap:8px">';
   html += '<span style="font-weight:bold;color:#0f6e3d;font-size:13px">🎮 联机对战大厅</span>';
-  html += '<button onclick="toggleWorkMode()" style="margin-left:auto;background:'+(workMode?'#ff9800':'#f0f0f0')+';color:'+(workMode?'#fff':'#333')+';border:1px solid '+(workMode?'#e68900':'#ccc')+';padding:4px 12px;cursor:pointer;font-size:12px;border-radius:3px;font-weight:bold">🎣 摸鱼模式: '+(workMode?'开':'关')+'</button>';
   html += '</div>';
 
   html += '<div style="padding:30px 40px">';
