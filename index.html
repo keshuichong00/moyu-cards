@@ -3572,6 +3572,11 @@ function handleWsMessage(msg) {
 }
 
 function createRoom() {
+  // 关闭所有可能干扰的辅助界面
+  deckBuilderOpen = false;
+  helpOpen = false;
+  modeSelectorOpen = false;
+  onlineState.lobbyOpen = true;
   const code = genRoomCode();
   const willTopic = MQTT_PREFIX + '/' + code + '/to_guest';
   if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
@@ -3582,7 +3587,7 @@ function createRoom() {
     onlineState.roomCode = code;
     onlineState.waitingForOpponent = true;
     onlineState.mqtt.subscribe(MQTT_PREFIX + '/' + code + '/to_host', { qos: 1 });
-    renderOnlineLobby();
+    render();
   });
   mqttSetupHandlers(onlineState.mqtt);
 }
@@ -3590,6 +3595,11 @@ function createRoom() {
 function joinRoom(code) {
   code = (code || '').toUpperCase().trim();
   if (code.length !== 4) { showToast('请输入4位房间码'); return; }
+  // 关闭所有可能干扰的辅助界面
+  deckBuilderOpen = false;
+  helpOpen = false;
+  modeSelectorOpen = false;
+  onlineState.lobbyOpen = true;
   const willTopic = MQTT_PREFIX + '/' + code + '/to_host';
   if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
   onlineState.mqtt = mqttConnect(willTopic);
@@ -3600,7 +3610,7 @@ function joinRoom(code) {
     onlineState.waitingForOpponent = false;
     onlineState.mqtt.subscribe(MQTT_PREFIX + '/' + code + '/to_guest', { qos: 1 });
     mqttSend({ type: 'opponent_joined' });
-    renderOnlineLobby();
+    render();
   });
   mqttSetupHandlers(onlineState.mqtt);
 }
@@ -3611,6 +3621,9 @@ function startOnlineGame() {
   const syncState = flipState(state);
   mqttSend({ type: 'game_init', state: syncState });
   onlineState.lobbyOpen = false;
+  deckBuilderOpen = false;
+  helpOpen = false;
+  modeSelectorOpen = false;
   showToast('联机对战开始！你先手');
   render();
 }
@@ -3633,6 +3646,9 @@ function flipState(s) {
 function applyGameInit(syncState) {
   state = syncState;
   onlineState.lobbyOpen = false;
+  deckBuilderOpen = false;
+  helpOpen = false;
+  modeSelectorOpen = false;
   showToast('联机对战开始！对手先手');
   render();
 }
