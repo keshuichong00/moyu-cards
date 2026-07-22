@@ -365,6 +365,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;background:#f3f2
 .draft-stage .ds-pool .ds-pool-empty{padding:30px;text-align:center;color:#999;font-size:12px;font-style:italic}
 .draft-stage .ds-mode-tag{display:inline-block;background:rgba(255,255,255,.25);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:normal}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
 </head>
 <body>
 
@@ -708,7 +709,7 @@ const GAME_MODE = {
 // 联机状态
 let onlineState = {
   connected: false,
-  ws: null,
+  mqtt: null,
   roomCode: null,
   isHost: false,
   lobbyOpen: false,
@@ -3455,47 +3456,68 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================
-// 联机对战模块
+// 联机对战模块（MQTT 公共中转 - 无需服务器）
 // ============================================
-function getWsUrl() {
-  if (location.protocol === 'file:') return 'ws://localhost:3000';
-  return (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
+const MQTT_PREFIX = 'moyu-cards-v1';
+
+function genRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
 }
 
-function connectOnline() {
-  if (onlineState.ws) { onlineState.ws.close(); onlineState.ws = null; }
-  try {
-    onlineState.ws = new WebSocket(getWsUrl());
-  } catch(e) {
-    showToast('无法连接服务器');
-    return;
-  }
-  onlineState.ws.onopen = () => {
-    onlineState.connected = true;
-    if (onlineState._pendingJoin) {
-      onlineState.ws.send(JSON.stringify({ type: 'join', code: onlineState._pendingJoin }));
-      onlineState._pendingJoin = null;
-    }
-    renderOnlineLobby();
+function mqttConnect(willTopic) {
+  const opts = {
+    clientId: 'moyu_' + Math.random().toString(16).substr(2, 12),
+    clean: true,
+    reconnectPeriod: 3000,
+    connectTimeout: 8000,
   };
-  onlineState.ws.onclose = () => {
+  if (willTopic) {
+    opts.will = {
+      topic: willTopic,
+      payload: JSON.stringify({ type: 'opponent_left' }),
+      qos: 1,
+      retain: false,
+    };
+  }
+  return mqtt.connect(MQTT_BROKER, opts);
+}
+
+function mqttSetupHandlers(client) {
+  client.on('message', (topic, message) => {
+    let msg;
+    try { msg = JSON.parse(message.toString()); } catch { return; }
+    handleWsMessage(msg);
+  });
+  client.on('close', () => {
     const wasConnected = onlineState.connected;
     onlineState.connected = false;
     if (wasConnected && onlineState.roomCode) {
-      showToast('连接已断开');
-      onlineState.roomCode = null;
-      onlineState.waitingForOpponent = false;
-      onlineState.lobbyOpen = true;
-      renderOnlineLobby();
-    } else if (!onlineState.connected) {
-      renderOnlineLobby();
+      showToast('连接已断开，正在重连...');
     }
-  };
-  onlineState.ws.onmessage = (event) => {
-    let msg;
-    try { msg = JSON.parse(event.data); } catch { return; }
-    handleWsMessage(msg);
-  };
+  });
+  client.on('error', () => {});
+}
+
+function connectOnline() {
+  if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
+  onlineState.mqtt = mqttConnect(null);
+  onlineState.mqtt.on('connect', () => {
+    onlineState.connected = true;
+    renderOnlineLobby();
+  });
+  mqttSetupHandlers(onlineState.mqtt);
+}
+
+function mqttSend(msg) {
+  if (!onlineState.mqtt || !onlineState.roomCode) return;
+  const topic = onlineState.isHost
+    ? MQTT_PREFIX + '/' + onlineState.roomCode + '/to_guest'
+    : MQTT_PREFIX + '/' + onlineState.roomCode + '/to_host';
+  onlineState.mqtt.publish(topic, JSON.stringify(msg), { qos: 1 });
 }
 
 function handleWsMessage(msg) {
@@ -3550,26 +3572,44 @@ function handleWsMessage(msg) {
 }
 
 function createRoom() {
-  if (!onlineState.connected) { connectOnline(); return; }
-  onlineState.ws.send(JSON.stringify({ type: 'create' }));
+  const code = genRoomCode();
+  const willTopic = MQTT_PREFIX + '/' + code + '/to_guest';
+  if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
+  onlineState.mqtt = mqttConnect(willTopic);
+  onlineState.mqtt.on('connect', () => {
+    onlineState.connected = true;
+    onlineState.isHost = true;
+    onlineState.roomCode = code;
+    onlineState.waitingForOpponent = true;
+    onlineState.mqtt.subscribe(MQTT_PREFIX + '/' + code + '/to_host', { qos: 1 });
+    renderOnlineLobby();
+  });
+  mqttSetupHandlers(onlineState.mqtt);
 }
 
 function joinRoom(code) {
   code = (code || '').toUpperCase().trim();
   if (code.length !== 4) { showToast('请输入4位房间码'); return; }
-  if (!onlineState.connected) {
-    onlineState._pendingJoin = code;
-    connectOnline();
-    return;
-  }
-  onlineState.ws.send(JSON.stringify({ type: 'join', code: code }));
+  const willTopic = MQTT_PREFIX + '/' + code + '/to_host';
+  if (onlineState.mqtt) { try { onlineState.mqtt.end(true); } catch {} }
+  onlineState.mqtt = mqttConnect(willTopic);
+  onlineState.mqtt.on('connect', () => {
+    onlineState.connected = true;
+    onlineState.isHost = false;
+    onlineState.roomCode = code;
+    onlineState.waitingForOpponent = false;
+    onlineState.mqtt.subscribe(MQTT_PREFIX + '/' + code + '/to_guest', { qos: 1 });
+    mqttSend({ type: 'opponent_joined' });
+    renderOnlineLobby();
+  });
+  mqttSetupHandlers(onlineState.mqtt);
 }
 
 function startOnlineGame() {
   initGame('fair');
   state.gameMode = GAME_MODE.ONLINE;
   const syncState = flipState(state);
-  onlineState.ws.send(JSON.stringify({ type: 'game_init', state: syncState }));
+  mqttSend({ type: 'game_init', state: syncState });
   onlineState.lobbyOpen = false;
   showToast('联机对战开始！你先手');
   render();
@@ -3602,7 +3642,7 @@ function sendSyncState() {
   const syncState = flipState(state);
   syncState.enemy.hand = syncState.enemy.hand.map(() =>
     ({name:'隐藏卡牌', cost:0, type:'minion', abilities:[], text:''}));
-  onlineState.ws.send(JSON.stringify({ type: 'sync_state', state: syncState }));
+  mqttSend({ type: 'sync_state', state: syncState });
 }
 
 function applySyncState(syncState) {
@@ -3660,7 +3700,7 @@ function startTurnOnline(p) {
 function onlineSendAction(action, data) {
   if (!onlineState.connected || onlineState.isHost) return false;
   onlineState.waitingForSync = true;
-  onlineState.ws.send(JSON.stringify({ type: 'action', action, ...data }));
+  mqttSend({ type: 'action', action, ...data });
   return true;
 }
 
@@ -3668,17 +3708,17 @@ function sendChat(text) {
   if (!onlineState.connected || !text.trim()) return;
   text = text.trim().slice(0, 100);
   onlineState.chatMessages.push({side: 'me', text});
-  onlineState.ws.send(JSON.stringify({ type: 'chat', message: text }));
+  mqttSend({ type: 'chat', message: text });
   renderChatBar();
 }
 
 function disconnectOnline() {
-  if (onlineState.ws) {
-    try { onlineState.ws.send(JSON.stringify({ type: 'leave' })); } catch {}
-    onlineState.ws.close();
+  if (onlineState.mqtt) {
+    try { mqttSend({ type: 'opponent_left' }); } catch {}
+    try { onlineState.mqtt.end(true); } catch {}
   }
   onlineState.connected = false;
-  onlineState.ws = null;
+  onlineState.mqtt = null;
   onlineState.roomCode = null;
   onlineState.isHost = false;
   onlineState.waitingForOpponent = false;
@@ -3688,7 +3728,7 @@ function disconnectOnline() {
 function concedeOnline() {
   if (!onlineState.connected || !state || state.gameOver) return;
   if (!confirm('确定认输吗？')) return;
-  onlineState.ws.send(JSON.stringify({ type: 'concede' }));
+  mqttSend({ type: 'concede' });
   state.gameOver = true;
   state.winner = 'enemy';
   render();
@@ -3704,12 +3744,7 @@ function renderOnlineLobby() {
 
   html += '<div style="padding:30px 40px">';
 
-  if (!onlineState.connected) {
-    html += '<div style="text-align:center;padding:40px">';
-    html += '<p style="font-size:14px;color:#666;margin-bottom:20px">点击下方按钮连接服务器</p>';
-    html += '<button onclick="connectOnline()" style="background:#0f6e3d;color:#fff;border:none;padding:10px 30px;font-size:14px;cursor:pointer;border-radius:4px">🔗 连接服务器</button>';
-    html += '</div>';
-  } else if (onlineState.waitingForOpponent && onlineState.roomCode) {
+  if (onlineState.waitingForOpponent && onlineState.roomCode) {
     html += '<div style="text-align:center;padding:40px">';
     html += '<p style="font-size:14px;color:#666;margin-bottom:10px">房间已创建，等待对手加入...</p>';
     html += '<div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#0f6e3d;margin:20px 0;background:#f0f7f0;padding:15px 30px;display:inline-block;border-radius:8px;border:2px dashed #0f6e3d">';
@@ -3717,7 +3752,7 @@ function renderOnlineLobby() {
     html += '<p style="font-size:12px;color:#999;margin-top:10px">将此房间码发给对方，对方输入后即可开始对战</p>';
     html += '<button onclick="disconnectOnline();renderOnlineLobby()" style="margin-top:20px;background:#f0f0f0;color:#666;border:1px solid #ccc;padding:6px 16px;cursor:pointer;font-size:12px;border-radius:3px">取消</button>';
     html += '</div>';
-  } else if (onlineState.connected && !onlineState.roomCode) {
+  } else {
     html += '<table style="border-collapse:collapse;width:100%;max-width:600px;margin:0 auto;font-size:13px"><tr>';
     html += '<td style="padding:20px;vertical-align:top;width:50%">';
     html += '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:20px;text-align:center">';
@@ -3765,11 +3800,7 @@ function closeOnlineLobby() {
 function openOnlineLobby() {
   modeSelectorOpen = false;
   onlineState.lobbyOpen = true;
-  if (!onlineState.connected) {
-    connectOnline();
-  } else {
-    renderOnlineLobby();
-  }
+  renderOnlineLobby();
 }
 
 function renderChatBar() {
